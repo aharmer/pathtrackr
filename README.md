@@ -13,7 +13,7 @@ You can install *pathtrackr* directly from within R using the *install\_github()
 install_github("aharmer/pathtrackr")
 ```
 
-Alternativley, you can download the source package from ...
+Alternativley, you can download and install the source package from the [pathtrackr](https://aharmer.github.io/pathtrackr/) page.
 
 Workflow
 --------
