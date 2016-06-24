@@ -105,10 +105,10 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
 
       plot(raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
       rect(ref.x1/ncol(frame.diff), ref.y1/nrow(frame.diff), ref.x2/ncol(frame.diff), ref.y2/nrow(frame.diff), border = "yellow", lwd = 1.5)
-      points(xpos[j]/ncol(frame.new), ypos[j]/nrow(frame.new), col = "green", pch = 16)
+      points(xpos[i]/ncol(frame.new), ypos[i]/nrow(frame.new), col = "green", pch = 16)
 
       plot(raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
-      points((xpos[j] - ref.x1)/ncol(track.box), (ypos[j] - ref.y1)/nrow(track.box), col = "green", pch = 16, cex = 2.5)
+      points((xpos[i] - ref.x1)/ncol(track.box), (ypos[i] - ref.y1)/nrow(track.box), col = "green", pch = 16, cex = 2.5)
 
       plot(xpos * (xarena/xpix), max(ypos * (yarena/ypix)) - ypos * (yarena/ypix), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, dim(frame.new)[2] * (xarena/xpix)), ylim = c(0, dim(frame.new)[1] * (yarena/ypix)), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
 
@@ -238,12 +238,12 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
 
       plot(raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
       rect(x1/ncol(frame.diff), y1/nrow(frame.diff), x2/ncol(frame.diff), y2/nrow(frame.diff), border = "yellow", lwd = 1.5)
-      points(xpos[j]/ncol(frame.new), ypos[j]/nrow(frame.new), col = "green", pch = 16)
-      segments(xpos[j - 1]/ncol(frame.new), ypos[j - 1]/nrow(frame.new), xpos[j]/ncol(frame.new), ypos[j]/nrow(frame.new), col = "green", pch = 16)
+      points(xpos[i]/ncol(frame.new), ypos[i]/nrow(frame.new), col = "green", pch = 16)
+      segments(xpos[i - 1]/ncol(frame.new), ypos[i - 1]/nrow(frame.new), xpos[i]/ncol(frame.new), ypos[i]/nrow(frame.new), col = "green", pch = 16)
 
       plot(raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
-      points((xpos[j] - x1)/ncol(track.box), (ypos[j] - y1)/nrow(track.box), col = "green", pch = 16, cex = 2.5)
-      segments((xpos[j - 1] - x1)/ncol(track.box), (ypos[j - 1] - y1)/nrow(track.box), (xpos[j] - x1)/ncol(track.box), (ypos[j] - y1)/nrow(track.box), col = "green", pch = 16, lwd = 3)
+      points((xpos[i] - x1)/ncol(track.box), (ypos[i] - y1)/nrow(track.box), col = "green", pch = 16, cex = 2.5)
+      segments((xpos[i - 1] - x1)/ncol(track.box), (ypos[i - 1] - y1)/nrow(track.box), (xpos[i] - x1)/ncol(track.box), (ypos[i] - y1)/nrow(track.box), col = "green", pch = 16, lwd = 3)
 
       plot(xpos * (xarena/xpix), ypos * (yarena/ypix), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, dim(frame.new)[2] * (xarena/xpix)), ylim = c(0, dim(frame.new)[1] * (yarena/ypix)), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
 
