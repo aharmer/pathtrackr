@@ -9,11 +9,11 @@ trackPath(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5)
 \arguments{
 \item{dirpath}{a character string specifying a directory containing only jpeg files extracted from a video}
 
-\item{xarena}{an integer specifying the arena width in mm}
+\item{xarena}{an integer specifying the arena width in mm; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations}
 
-\item{yarena}{an integer specifying the arena height in mm}
+\item{yarena}{an integer specifying the arena height in mm; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations}
 
-\item{fps}{an integer specifying the frame rate at which jpegs were extracted from a video}
+\item{fps}{an integer specifying the frame rate at which jpegs were extracted from a video; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations}
 
 \item{box}{an integer specifying the size of the tracking box relative to the initial animal selection box; a larger box size will help prevent the animal being lost (useful for fast moving animals) but will also increase sensitivity to background and lighting changes (default 2)}
 

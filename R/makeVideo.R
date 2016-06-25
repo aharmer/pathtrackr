@@ -1,6 +1,6 @@
 #' Make a video of an animal's tracked path
 #'
-#' \code{makeVideo} uses a \code{trackPath} and FFmpeg to produce an mp4 video of an animal's movement along with tracking behaviour and summary plots.
+#' \code{makeVideo} uses \code{trackPath} and FFmpeg to produce an mp4 video of an animal's movement along with tracking behaviour and summary plots.
 #' @inheritParams trackPath
 #' @details See documentation for \code{\link{trackPath}}.
 #' @return An mp4 video of an animal's movement containing the original video, tracking behaviour plots and summary plots.
