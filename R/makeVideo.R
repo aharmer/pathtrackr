@@ -58,11 +58,12 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
   pb = txtProgressBar(min = 0, max = length(file.list), initial = 0, style = 3)
 
   dir.create(paste(dirpath, "_temp", sep = ""))
+  plot.list = paste(dirpath, "_temp/plot_", gsub("\\s", "0", format(seq(1:length(file.list)), justify = "left", width=6)), ".jpg", sep = "")
 
-  for (i in 1:length(file.list)) {
+  for (i in 1:length(plot.list)) {
 
-    fig = paste(dirpath, "_temp/plot_", unlist(strsplit(file.list[i], "/"))[length(unlist(strsplit(file.list[i], "/")))], sep = "")
-    jpeg(fig, width = 1080 * 1.5, height = 1080)
+    # fig = paste(dirpath, "_temp/plot_", unlist(strsplit(file.list[i], "/"))[length(unlist(strsplit(file.list[i], "/")))], sep = "")
+    jpeg(plot.list[i], width = 1080 * 1.5, height = 1080)
 
     frame.new = readJPEG(file.list[i])
     frame.new = frame.new[(nrow(frame.new) - bg.crop[3]):(nrow(frame.new) - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:3]
@@ -257,9 +258,8 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
     setTxtProgressBar(pb, i)
 
   }
-  ypos = nrow(frame.ref) - ypos
 
-  system(paste("ffmpeg -loglevel panic -y -framerate ", fps, " -pattern_type glob -i ", paste(dirpath, "_temp/'*.jpg'", sep = ""), " -c:v libx264 -r 25 -pix_fmt yuv420p ", paste(paste(unlist(strsplit(dirpath, "/"))[1:(length(unlist(strsplit(dirpath, "/"))) - 1)], collapse = "/"), "/", unlist(strsplit(dirpath, "/"))[length(unlist(strsplit(dirpath, "/")))], sep = ""), "_TRACKED.mp4", sep = ""))
+  system(paste("ffmpeg -loglevel panic -y -framerate ", fps, " -i ", paste(dirpath, "_temp/plot_%06d.jpg", sep = ""), " -c:v libx264 -r 25 -pix_fmt yuv420p ", paste(paste(unlist(strsplit(dirpath, "/"))[1:(length(unlist(strsplit(dirpath, "/"))) - 1)], collapse = "/"), "/", unlist(strsplit(dirpath, "/"))[length(unlist(strsplit(dirpath, "/")))], sep = ""), "_TRACKED.mp4", sep = ""))
 
   unlink(paste(dirpath, "_temp", sep = ""), recursive = TRUE)
 
