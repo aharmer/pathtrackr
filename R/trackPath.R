@@ -10,7 +10,7 @@
 #' @details \code{trackPath} tracks an individual animal's movement across a series of still frames. The function utilises a focusing box to limit the search area for the animal relative to its previous position. This makes \code{trackPath} relatively robust to background lighting changes, extraneous backgroud movement and jpeg noise. It can also handle a dark animal on a light background and vice versa, but will not perform well if the contrast within the background is greater than the contrast between the animal and background.
 #' @return A list containing a matrix of xy co-ordinates of the animal in each frame, a matrix of movement data including the distance, velocity and trajectories of movement between frames, and summary statistics.
 #' @importFrom jpeg readJPEG
-#' @importFrom raster raster extent select as.vector
+#' @importFrom raster raster extent select
 #' @importFrom SDMTools COGravity
 #' @export
 trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {

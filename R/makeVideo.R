@@ -6,7 +6,7 @@
 #' @return An mp4 video of an animal's movement containing the original video, tracking behaviour plots and summary plots.
 #' @note \code{makeVideo} requires FFmpeg to be installed on your machine. FFmpeg is a cross-platform, open-source video editing tool. It can be downloaded from \url{https://ffmpeg.org}.
 #' @importFrom jpeg readJPEG
-#' @importFrom raster raster extent select as.vector
+#' @importFrom raster raster extent select
 #' @importFrom SDMTools COGravity
 #' @importFrom viridis magma
 #' @export

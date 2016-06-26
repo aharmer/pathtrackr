@@ -5,7 +5,7 @@
 #' @details See documentation for \code{\link{trackPath}}.
 #' @return A list containing a matrix of xy co-ordinates of the animal in each frame, a matrix of movement data including the distance, velocity and trajectories of movement between frames, summary statistics, and a diagnostic PDF.
 #' @importFrom jpeg readJPEG
-#' @importFrom raster raster extent select as.vector
+#' @importFrom raster raster extent select
 #' @importFrom SDMTools COGravity
 #' @importFrom viridis magma
 #' @export
