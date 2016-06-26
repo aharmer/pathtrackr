@@ -26,7 +26,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
 
   message("Select a portion of the image that includes the entire animal...")
   flush.console()
-  animal.crop = as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
+  animal.crop = raster::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
   animal.frame = frame.calib[(nrow(frame.calib) - animal.crop[3]):(nrow(frame.calib) - animal.crop[4]), animal.crop[1]:animal.crop[2], 1:3]
   animal.gray = (animal.frame[,,1] * 0.2126) + (animal.frame[,,2] * 0.7152) + (animal.frame[,,3] * 0.0722)
   animal.mean = mean(animal.gray)
@@ -41,7 +41,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
 
   message("Define the opposing corners of the entire arena...")
   flush.console()
-  bg.crop = as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
+  bg.crop = raster::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
   frame.bg = frame.calib[(nrow(frame.calib) - bg.crop[3]):(nrow(frame.calib) - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:3]
   xpix = ncol(frame.bg)
   ypix = nrow(frame.bg)
@@ -104,11 +104,11 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
       plot(1, 1, xlim = c(1, res[1]), ylim = c(1, res[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
       rasterImage(raster::as.raster(frame.jpg[nrow(frame.jpg):1, , ]), 1, 1, res[1], res[2])
 
-      plot(raster::raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
+      plot(raster::raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::magma(256))
       rect(ref.x1/ncol(frame.diff), ref.y1/nrow(frame.diff), ref.x2/ncol(frame.diff), ref.y2/nrow(frame.diff), border = "yellow", lwd = 1.5)
       points(xpos[i]/ncol(frame.new), ypos[i]/nrow(frame.new), col = "green", pch = 16)
 
-      plot(raster::raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
+      plot(raster::raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::magma(256))
       points((xpos[i] - ref.x1)/ncol(track.box), (ypos[i] - ref.y1)/nrow(track.box), col = "green", pch = 16, cex = 2.5)
 
       plot(xpos * (xarena/xpix), max(ypos * (yarena/ypix)) - ypos * (yarena/ypix), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, dim(frame.new)[2] * (xarena/xpix)), ylim = c(0, dim(frame.new)[1] * (yarena/ypix)), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
@@ -237,12 +237,12 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
       plot(1, 1, xlim = c(1, res[1]), ylim = c(1, res[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
       rasterImage(raster::as.raster(frame.jpg[nrow(frame.jpg):1, , ]), 1, 1, res[1], res[2])
 
-      plot(raster::raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
+      plot(raster::raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::magma(256))
       rect(x1/ncol(frame.diff), y1/nrow(frame.diff), x2/ncol(frame.diff), y2/nrow(frame.diff), border = "yellow", lwd = 1.5)
       points(xpos[i]/ncol(frame.new), ypos[i]/nrow(frame.new), col = "green", pch = 16)
       segments(xpos[i - 1]/ncol(frame.new), ypos[i - 1]/nrow(frame.new), xpos[i]/ncol(frame.new), ypos[i]/nrow(frame.new), col = "green", pch = 16)
 
-      plot(raster::raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
+      plot(raster::raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::magma(256))
       points((xpos[i] - x1)/ncol(track.box), (ypos[i] - y1)/nrow(track.box), col = "green", pch = 16, cex = 2.5)
       segments((xpos[i - 1] - x1)/ncol(track.box), (ypos[i - 1] - y1)/nrow(track.box), (xpos[i] - x1)/ncol(track.box), (ypos[i] - y1)/nrow(track.box), col = "green", pch = 16, lwd = 3)
 
