@@ -6,8 +6,9 @@
 #' @return An mp4 video of an animal's movement containing the original video, tracking behaviour plots and summary plots.
 #' @note \code{makeVideo} requires FFmpeg to be installed on your machine. FFmpeg is a cross-platform, open-source video editing tool. It can be downloaded from \url{https://ffmpeg.org}.
 #' @importFrom jpeg readJPEG
-#' @importFrom raster raster extent select
+#' @importFrom raster raster extent select as.vector
 #' @importFrom SDMTools COGravity
+#' @importFrom viridis magma
 #' @export
 makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
 
@@ -20,12 +21,12 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
   animal.last = c()
 
   file.list = list.files(dirpath, full.names = T)
-  frame.calib = readJPEG(file.list[1])
-  plot(raster(file.list[1], band = 2), col = gray.colors(256))
+  frame.calib = jpeg::readJPEG(file.list[1])
+  plot(raster::raster(file.list[1], band = 2), col = gray.colors(256))
 
   message("Select a portion of the image that includes the entire animal...")
   flush.console()
-  animal.crop = as.vector(extent(select(raster(file.list[1], band = 2))))
+  animal.crop = raster::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
   animal.frame = frame.calib[(nrow(frame.calib) - animal.crop[3]):(nrow(frame.calib) - animal.crop[4]), animal.crop[1]:animal.crop[2], 1:3]
   animal.gray = (animal.frame[,,1] * 0.2126) + (animal.frame[,,2] * 0.7152) + (animal.frame[,,3] * 0.0722)
   animal.mean = mean(animal.gray)
@@ -40,8 +41,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
 
   message("Define the opposing corners of the entire arena...")
   flush.console()
-  bg.crop = as.vector(extent(select(raster(file.list[1], band = 2))))
-  # frame.bg = readJPEG(file.list[1])
+  bg.crop = raster::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
   frame.bg = frame.calib[(nrow(frame.calib) - bg.crop[3]):(nrow(frame.calib) - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:3]
   xpix = ncol(frame.bg)
   ypix = nrow(frame.bg)
@@ -65,7 +65,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
     # fig = paste(dirpath, "_temp/plot_", unlist(strsplit(file.list[i], "/"))[length(unlist(strsplit(file.list[i], "/")))], sep = "")
     jpeg(plot.list[i], width = 1080 * 1.5, height = 1080)
 
-    frame.new = readJPEG(file.list[i])
+    frame.new = jpeg::readJPEG(file.list[i])
     frame.new = frame.new[(nrow(frame.new) - bg.crop[3]):(nrow(frame.new) - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:3]
     frame.jpg = frame.new
     frame.new = (frame.new[,,1] * 0.2126) + (frame.new[,,2] * 0.7152) + (frame.new[,,3] * 0.0722)
@@ -82,7 +82,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
         animal.y = (1 - (which(frame.shift < contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
         z = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
         wt = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
-        COG1 = COGravity(animal.x, animal.y, z, wt)
+        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
         animal.last = which(frame.shift < contrast)
 
       } else {
@@ -92,7 +92,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
         animal.y = (1 - (which(frame.shift > contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
         z = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
         wt = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
-        COG1 = COGravity(animal.x, animal.y, z, wt)
+        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
       }
       xpos[i] = COG1[1]
       ypos[i] = nrow(frame.diff) - COG1[3]
@@ -104,11 +104,11 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
       plot(1, 1, xlim = c(1, res[1]), ylim = c(1, res[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
       rasterImage(raster::as.raster(frame.jpg[nrow(frame.jpg):1, , ]), 1, 1, res[1], res[2])
 
-      plot(raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
+      plot(raster::raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::magma(256))
       rect(ref.x1/ncol(frame.diff), ref.y1/nrow(frame.diff), ref.x2/ncol(frame.diff), ref.y2/nrow(frame.diff), border = "yellow", lwd = 1.5)
       points(xpos[i]/ncol(frame.new), ypos[i]/nrow(frame.new), col = "green", pch = 16)
 
-      plot(raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
+      plot(raster::raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::magma(256))
       points((xpos[i] - ref.x1)/ncol(track.box), (ypos[i] - ref.y1)/nrow(track.box), col = "green", pch = 16, cex = 2.5)
 
       plot(xpos * (xarena/xpix), max(ypos * (yarena/ypix)) - ypos * (yarena/ypix), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, dim(frame.new)[2] * (xarena/xpix)), ylim = c(0, dim(frame.new)[1] * (yarena/ypix)), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
@@ -140,7 +140,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
         animal.y = (1 - (which(frame.shift < contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
         z = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
         wt = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
-        COG1 = COGravity(animal.x, animal.y, z, wt)
+        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
 
       } else {
         frame.shift = matrix(0, nrow(frame.diff), ncol(frame.diff))
@@ -149,7 +149,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
         animal.y = (1 - (which(frame.shift > contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
         z = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
         wt = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
-        COG1 = COGravity(animal.x, animal.y, z, wt)
+        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
       }
       animal.new = which(frame.shift < contrast)
       animal.move = (length(na.omit(match(animal.last, animal.new))))/(max(c(length(animal.last), length(animal.new))))
@@ -176,7 +176,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
             animal.y = which(frame.break < contrast, arr.ind = T)[,1]
             z = rep(1, length = length(which(frame.break < contrast, arr.ind = T)[,1]))
             wt = rep(1, length = length(which(frame.break < contrast, arr.ind = T)[,1]))
-            COG2 = COGravity(animal.x, animal.y, z, wt)
+            COG2 = SDMTools::COGravity(animal.x, animal.y, z, wt)
 
             xpos[i] = COG2[1]
             ypos[i] = COG2[3]
@@ -199,7 +199,7 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
             animal.y = which(frame.break > contrast, arr.ind = T)[,1]
             z = rep(1, length = length(which(frame.break > contrast, arr.ind = T)[,1]))
             wt = rep(1, length = length(which(frame.break > contrast, arr.ind = T)[,1]))
-            COG2 = COGravity(animal.x, animal.y, z, wt)
+            COG2 = SDMTools::COGravity(animal.x, animal.y, z, wt)
             xpos[i] = COG2[1]
             ypos[i] = COG2[3]
 
@@ -237,12 +237,12 @@ makeVideo = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
       plot(1, 1, xlim = c(1, res[1]), ylim = c(1, res[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
       rasterImage(raster::as.raster(frame.jpg[nrow(frame.jpg):1, , ]), 1, 1, res[1], res[2])
 
-      plot(raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
+      plot(raster::raster(frame.new[nrow(frame.new):1, ]), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::magma(256))
       rect(x1/ncol(frame.diff), y1/nrow(frame.diff), x2/ncol(frame.diff), y2/nrow(frame.diff), border = "yellow", lwd = 1.5)
       points(xpos[i]/ncol(frame.new), ypos[i]/nrow(frame.new), col = "green", pch = 16)
       segments(xpos[i - 1]/ncol(frame.new), ypos[i - 1]/nrow(frame.new), xpos[i]/ncol(frame.new), ypos[i]/nrow(frame.new), col = "green", pch = 16)
 
-      plot(raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = magma(256))
+      plot(raster::raster(track.box), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::magma(256))
       points((xpos[i] - x1)/ncol(track.box), (ypos[i] - y1)/nrow(track.box), col = "green", pch = 16, cex = 2.5)
       segments((xpos[i - 1] - x1)/ncol(track.box), (ypos[i - 1] - y1)/nrow(track.box), (xpos[i] - x1)/ncol(track.box), (ypos[i] - y1)/nrow(track.box), col = "green", pch = 16, lwd = 3)
 

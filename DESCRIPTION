@@ -14,7 +14,7 @@ Description: The 'pathtrackr' package allows for automated video tracking of an
     statistics. Also included are plotting and disgnostic functions.
 License: GPL-3
 LazyData: TRUE
-Depends:
+Imports:
     jpeg,
     raster,
     SDMTools,

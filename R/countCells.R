@@ -21,10 +21,10 @@ countCells = function(path.list, xgrid, ygrid) {
     track = matrix(ncol = length(round(path.list$position[,1][i - 1]):round(path.list$position[,1][i])), nrow = length(round(path.list$position[,2][i - 1]):round(path.list$position[,2][i])))
     colnames(track) = round(path.list$position[,1][i - 1]):round(path.list$position[,1][i])
     rownames(track) = round(path.list$position[,2][i - 1]):round(path.list$position[,2][i])
-    diag.bathy(track, coord = T)
+    marmap::diag.bathy(track, coord = T)
 
-    xtrack = append(xtrack, diag.bathy(track, coord = T)[,2])
-    ytrack = append(ytrack, diag.bathy(track, coord = T)[,1])
+    xtrack = append(xtrack, marmap::diag.bathy(track, coord = T)[,2])
+    ytrack = append(ytrack, marmap::diag.bathy(track, coord = T)[,1])
   }
 
   cells = c()
