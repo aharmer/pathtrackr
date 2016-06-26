@@ -33,7 +33,7 @@ Using *pathtrackr* is very straightforward. Below are simple steps to process an
 #### 1. Extract jpegs from video
 
 ``` r
-splitVideo(filepath, fps, xpix = 320, ypix = -1)
+splitVideo(filepath, fps, xpix, ypix)
 ```
 
 Using the function *splitVideo*, specify the: \* file path of your video \* the number of frames per second to extract. If fps is equal to the recording frame rate, all frames will be extracted. For fast moving animals, it is recommended to use a higher frame rate \* size (in pixels) of the extracted jpegs. The tracking functions here do not require high resolution imagery, so we recommend using the default values for faster processing time. A value of -1 for ypix will maintain the aspect ratio.
@@ -43,7 +43,7 @@ The still frames will be saved in a new directory with the same name as the vide
 #### 2. Track your animal's movement
 
 ``` r
-trackPath(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5)
+trackPath(dirpath, xarena, yarena, fps, box, contrast)
 ```
 
 Next, use the *trackPath()* function and assign to a new object. Specify the directory containing your extracted jpegs, the dimensions of your arena in mm, and the frame rate at which you extracted still frames from the video. The function will work if these values are incorrectly specified, however, they are used in distance and velocity calculations later, so will return incorrect values.
@@ -81,7 +81,7 @@ The *plotSummary()* function returns a four-paneled plot summarising the the ani
    
 
 ``` r
-makeVideo(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5)
+makeVideo(dirpath, xarena, yarena, fps, box, contrast)
 ```
 
 You can also produce a video output of the animal's movement, along with summary plots, using the *makeVideo()* function. The function variables are the same as the main tracking function above, but instead of returning a list of data, an mp4 file will be saved in the same directory as the original video.
