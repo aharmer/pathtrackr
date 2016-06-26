@@ -50,11 +50,11 @@ Next, use the *trackPath()* function and assign to a new object. Specify the dir
 
 After running the function, you will be prompted to define the animal in the first frame of the video. Click once to select one corner of the tracking box, and click once more to select the opposing corner.
 
-<img src="https://cloud.githubusercontent.com/assets/10540385/16355521/e27c4cd4-3b0c-11e6-9f2f-2e8f841ef308.jpg" width="600" />  
+<img src="https://cloud.githubusercontent.com/assets/10540385/16355521/e27c4cd4-3b0c-11e6-9f2f-2e8f841ef308.jpg" width="600" style="display: block; margin: auto;" />  
 
 You will then be prompted to define the edges of the arena. Again, select the opposing corners on the image that mark the edges of the arena.
 
-<img src="https://cloud.githubusercontent.com/assets/10540385/16355522/e81f8f3e-3b0c-11e6-9c53-53bd9eba0b70.jpg" width="600" />
+<img src="https://cloud.githubusercontent.com/assets/10540385/16355522/e81f8f3e-3b0c-11e6-9c53-53bd9eba0b70.jpg" width="600" style="display: block; margin: auto;" />
 
 The function will now begin tracking your animal across frames and return a list with a range of useful information, including a matrix of the xy co-ordinates of the animal in each frame, a matrix of movement data such as distances, velocities and bearings bewteen each frame, and some summary data. Each of these elements can be retrieved by referencing the appropriate element in the returned list.
 
@@ -66,7 +66,7 @@ plotPath(path.list)
 
 The *plotPath()* function will plot the animal's path across the arena with density clouds representing the relative time spent in a given location. The only input required is the names list generated previously.
 
-<img src="https://cloud.githubusercontent.com/assets/10540385/16355859/837b3d7e-3b18-11e6-9884-9e042ed8f0ce.jpg" width="600" />
+<img src="https://cloud.githubusercontent.com/assets/10540385/16355859/837b3d7e-3b18-11e6-9884-9e042ed8f0ce.jpg" width="600" style="display: block; margin: auto;" />
 
    
 
@@ -76,7 +76,7 @@ The *plotPath()* function will plot the animal's path across the arena with dens
 
 The *plotSummary()* function returns a four-paneled plot summarising the the animal's path, i.e. cumulative distance and velocity over time, and absolute and relative bearings across frames.
 
-<img src="https://cloud.githubusercontent.com/assets/10540385/16355860/8f92255a-3b18-11e6-8b48-d8961536dad6.jpg" width="600" />
+<img src="https://cloud.githubusercontent.com/assets/10540385/16355860/8f92255a-3b18-11e6-8b48-d8961536dad6.jpg" width="600" style="display: block; margin: auto;" />
 
    
 
@@ -86,7 +86,7 @@ makeVideo(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5)
 
 You can also produce a video output of the animal's movement, along with summary plots, using the *makeVideo()* function. The function variables are the same as the main tracking function above, but instead of returning a list of data, an mp4 file will be saved in the same directory as the original video.
 
-<img src="https://cloud.githubusercontent.com/assets/10540385/16360174/3a8ab69c-3ba6-11e6-82b8-e72363e2bf31.gif" width="600" />
+<img src="https://cloud.githubusercontent.com/assets/10540385/16360174/3a8ab69c-3ba6-11e6-82b8-e72363e2bf31.gif" width="600" style="display: block; margin: auto;" />
 
    
 
