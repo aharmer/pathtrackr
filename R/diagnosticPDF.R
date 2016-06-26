@@ -25,7 +25,7 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) 
 
   message("Select a portion of the image that includes the entire animal...")
   flush.console()
-  animal.crop = raster::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
+  animal.crop = as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
   animal.frame = frame.calib[(nrow(frame.calib) - animal.crop[3]):(nrow(frame.calib) - animal.crop[4]), animal.crop[1]:animal.crop[2], 1:3]
   animal.gray = (animal.frame[,,1] * 0.2126) + (animal.frame[,,2] * 0.7152) + (animal.frame[,,3] * 0.0722)
   animal.mean = mean(animal.gray)
@@ -41,7 +41,7 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) 
   message("Define the opposing corners of the entire arena...")
   flush.console()
 
-  bg.crop = raster::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
+  bg.crop = as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
   frame.bg = frame.calib[(nrow(frame.calib) - bg.crop[3]):(nrow(frame.calib) - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:3]
   xpix = ncol(frame.bg)
   ypix = nrow(frame.bg)
