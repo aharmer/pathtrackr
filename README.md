@@ -23,8 +23,7 @@ The *pathtrackr* package includes functions for handling video files; *splitVide
 
 If you do not already have FFmpeg installed, these links provide excellent instructions:
 
-[Install FFmpeg on Mac](http://www.idiotinside.com/2016/05/01/ffmpeg-mac-os-x/)
-[Install FFmpeg on Windows](http://www.wikihow.com/Install-FFmpeg-on-Windows)
+[Install FFmpeg on Mac](http://www.idiotinside.com/2016/05/01/ffmpeg-mac-os-x/)     [Install FFmpeg on Windows](http://www.wikihow.com/Install-FFmpeg-on-Windows)
 
 How to use pathtrackr
 ---------------------
@@ -51,7 +50,7 @@ Next, use the *trackPath()* function and assign to a new object. Specify the dir
 
 After running the function, you will be prompted to define the animal in the first frame of the video. Click once to select one corner of the tracking box, and click once more to select the opposing corner.
 
-![animal\_selection](https://cloud.githubusercontent.com/assets/10540385/16355521/e27c4cd4-3b0c-11e6-9f2f-2e8f841ef308.jpg)
+![animal\_selection](https://cloud.githubusercontent.com/assets/10540385/16355521/e27c4cd4-3b0c-11e6-9f2f-2e8f841ef308.jpg)  
 
 You will then be prompted to define the edges of the arena. Again, select the opposing corners on the image that mark the edges of the arena.
 
@@ -69,12 +68,28 @@ The *plotPath()* function will plot the animal's path across the arena with dens
 
 ![plotpath\_example](https://cloud.githubusercontent.com/assets/10540385/16355859/837b3d7e-3b18-11e6-9884-9e042ed8f0ce.jpg)
 
-------------------------------------------------------------------------
+   
 
 ``` r
  plotSummary(path.list)
 ```
 
-The *plotSummary()* function returns a four-paneled plot summariing the the animal's path, i.e. cumulative distance and velocity over time, and absolute and relative bearings across frames.
+The *plotSummary()* function returns a four-paneled plot summarising the the animal's path, i.e. cumulative distance and velocity over time, and absolute and relative bearings across frames.
 
 ![plotsummary\_example](https://cloud.githubusercontent.com/assets/10540385/16355860/8f92255a-3b18-11e6-8b48-d8961536dad6.jpg)
+
+   
+
+``` r
+makeVideo(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5)
+```
+
+You can also produce a video output of the animal's movement, along with summary plots, using the *makeVideo()* function. The function variables are the same as the main tracking function above, but instead of returning a list of data, an mp4 file will be saved in the same directory as the original video.
+
+![makevideo\_example](https://cloud.githubusercontent.com/assets/10540385/16360174/3a8ab69c-3ba6-11e6-82b8-e72363e2bf31.gif)
+
+   
+
+#### 4. Troubleshooting
+
+If your animal is not being tracked properly, use the *diagnosticPDF()* function to view the tracking behaviour in each frame. Function variables are again the same as the main tracking function but in addition to returning a list of data, a pdf file will be saved with a page of plots for each frame. These can be used to visually compare the data with what is actually happening during tracking.
