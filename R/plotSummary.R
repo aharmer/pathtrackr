@@ -11,14 +11,14 @@ plotSummary = function(path.list) {
 
   dat = as.data.frame(path.list$movement)
 
-  plot1 = ggplot(dat, aes(x = time, y = cumsum(distance))) +
+  plot1 = ggplot2::ggplot(dat, aes(x = time, y = cumsum(distance))) +
     geom_line(color = "grey25") +
     theme_bw() +
     xlab("") +
     ylab("Distance (mm)") +
     ggtitle("Cumulative distance")
 
-  plot2 = ggplot(dat, aes(x = time, y = velocity)) +
+  plot2 = ggplot2::ggplot(dat, aes(x = time, y = velocity)) +
     geom_line(color = "grey85") +
     geom_line(aes(x = time, y = movingAverage(velocity, n = 13, centered = TRUE)), color = "grey25") +
     theme_bw() +
@@ -28,7 +28,7 @@ plotSummary = function(path.list) {
 
   dat = subset(dat, distance != 0)
 
-  plot3 = ggplot(dat, aes(x = abs.angle)) +
+  plot3 = ggplot2::ggplot(dat, aes(x = abs.angle)) +
     geom_histogram(aes(y = ..count../sum(..count..)), breaks = seq(0, 360, 15)) +
     coord_polar(start = 0) +
     theme_bw() +
@@ -37,7 +37,7 @@ plotSummary = function(path.list) {
     ggtitle("Absolute bearing") +
     scale_x_continuous("", limits = c(0, 360), breaks = seq(0, 359, 45), labels = seq(0, 359, 45))
 
-  plot4 = ggplot(dat, aes(x = rel.angle)) +
+  plot4 = ggplot2::ggplot(dat, aes(x = rel.angle)) +
     geom_histogram(aes(y = ..count../sum(..count..)), breaks = seq(-180, 180, 15)) +
     coord_polar(start = pi) +
     theme_bw() +
@@ -46,6 +46,6 @@ plotSummary = function(path.list) {
     ggtitle("Relative turn direction") +
     scale_x_continuous("", limits = c(-180, 180), breaks = seq(-180, 180, 45), labels = seq(-180, 180, 45))
 
-  grid.arrange(plot1, plot3, plot2, plot4, ncol = 2)
+  gridExtra::grid.arrange(plot1, plot3, plot2, plot4, ncol = 2)
 
 }

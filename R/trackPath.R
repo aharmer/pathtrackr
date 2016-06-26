@@ -23,12 +23,12 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
   animal.last = c()
 
   file.list = list.files(dirpath, full.names = T)
-  frame.calib = readJPEG(file.list[1])
-  plot(raster(file.list[1], band = 2), col = gray.colors(256))
+  frame.calib = jpeg::readJPEG(file.list[1])
+  plot(raster::raster(file.list[1], band = 2), col = gray.colors(256))
 
   message("Select a portion of the image that includes the entire animal...")
   flush.console()
-  animal.crop = as.vector(extent(select(raster(file.list[1], band = 2))))
+  animal.crop = as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
   animal.frame = frame.calib[(nrow(frame.calib) - animal.crop[3]):(nrow(frame.calib) - animal.crop[4]), animal.crop[1]:animal.crop[2], 1:3]
   animal.gray = (animal.frame[,,1] * 0.2126) + (animal.frame[,,2] * 0.7152) + (animal.frame[,,3] * 0.0722)
   animal.mean = mean(animal.gray)
@@ -43,8 +43,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
 
   message("Define the opposing corners of the entire arena...")
   flush.console()
-  bg.crop = as.vector(extent(select(raster(file.list[1], band = 2))))
-  # frame.bg = readJPEG(file.list[1])
+  bg.crop = as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
   frame.bg = frame.calib[(nrow(frame.calib) - bg.crop[3]):(nrow(frame.calib) - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:3]
   xpix = ncol(frame.bg)
   ypix = nrow(frame.bg)
@@ -62,7 +61,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
 
   for (i in 1:length(file.list)) {
 
-    frame.new = readJPEG(file.list[i])
+    frame.new = jpeg::readJPEG(file.list[i])
     frame.new = frame.new[(nrow(frame.new) - bg.crop[3]):(nrow(frame.new) - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:3]
     frame.new = (frame.new[,,1] * 0.2126) + (frame.new[,,2] * 0.7152) + (frame.new[,,3] * 0.0722)
     frame.diff = frame.new - frame.ref
@@ -78,7 +77,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
         animal.y = (1 - (which(frame.shift < contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
         z = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
         wt = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
-        COG1 = COGravity(animal.x, animal.y, z, wt)
+        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
         animal.last = which(frame.shift < contrast)
 
       } else {
@@ -88,7 +87,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
         animal.y = (1 - (which(frame.shift > contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
         z = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
         wt = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
-        COG1 = COGravity(animal.x, animal.y, z, wt)
+        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
       }
       xpos[i] = COG1[1]
       ypos[i] = nrow(frame.diff) - COG1[3]
@@ -117,7 +116,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
         animal.y = (1 - (which(frame.shift < contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
         z = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
         wt = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
-        COG1 = COGravity(animal.x, animal.y, z, wt)
+        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
 
       } else {
         frame.shift = matrix(0, nrow(frame.diff), ncol(frame.diff))
@@ -126,7 +125,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
         animal.y = (1 - (which(frame.shift > contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
         z = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
         wt = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
-        COG1 = COGravity(animal.x, animal.y, z, wt)
+        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
       }
       animal.new = which(frame.shift < contrast)
       animal.move = (length(na.omit(match(animal.last, animal.new))))/(max(c(length(animal.last), length(animal.new))))
@@ -153,7 +152,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
             animal.y = which(frame.break < contrast, arr.ind = T)[,1]
             z = rep(1, length = length(which(frame.break < contrast, arr.ind = T)[,1]))
             wt = rep(1, length = length(which(frame.break < contrast, arr.ind = T)[,1]))
-            COG2 = COGravity(animal.x, animal.y, z, wt)
+            COG2 = SDMTools::COGravity(animal.x, animal.y, z, wt)
 
             xpos[i] = COG2[1]
             ypos[i] = COG2[3]
@@ -176,7 +175,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
             animal.y = which(frame.break > contrast, arr.ind = T)[,1]
             z = rep(1, length = length(which(frame.break > contrast, arr.ind = T)[,1]))
             wt = rep(1, length = length(which(frame.break > contrast, arr.ind = T)[,1]))
-            COG2 = COGravity(animal.x, animal.y, z, wt)
+            COG2 = SDMTools::COGravity(animal.x, animal.y, z, wt)
             xpos[i] = COG2[1]
             ypos[i] = COG2[3]
 
