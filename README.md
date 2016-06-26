@@ -50,7 +50,10 @@ Next, use the *trackPath()* function and assign to a new object. Specify the dir
 
 After running the function, you will be prompted to define the animal in the first frame of the video. Click once to select one corner of the tracking box, and click once more to select the opposing corner.
 
-![animal\_selection](https://cloud.githubusercontent.com/assets/10540385/16355521/e27c4cd4-3b0c-11e6-9f2f-2e8f841ef308.jpg)  
+<img src="https://cloud.githubusercontent.com/assets/10540385/16355521/e27c4cd4-3b0c-11e6-9f2f-2e8f841ef308.jpg" width="600" />
+
+<!-- ![animal_selection](https://cloud.githubusercontent.com/assets/10540385/16355521/e27c4cd4-3b0c-11e6-9f2f-2e8f841ef308.jpg) -->
+ 
 
 You will then be prompted to define the edges of the arena. Again, select the opposing corners on the image that mark the edges of the arena.
 
