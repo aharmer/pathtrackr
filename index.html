@@ -43,8 +43,7 @@
 
 <p>If you do not already have FFmpeg installed, these links provide excellent instructions:</p>
 
-<p><a href="http://www.idiotinside.com/2016/05/01/ffmpeg-mac-os-x/">Install FFmpeg on Mac</a>
-<a href="http://www.wikihow.com/Install-FFmpeg-on-Windows">Install FFmpeg on Windows</a></p>
+<p><a href="http://www.idiotinside.com/2016/05/01/ffmpeg-mac-os-x/">Install FFmpeg on Mac</a>     <a href="http://www.wikihow.com/Install-FFmpeg-on-Windows">Install FFmpeg on Windows</a></p>
 
 <h2>
 <a id="how-to-use-pathtrackr" class="anchor" href="#how-to-use-pathtrackr" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>How to use pathtrackr</h2>
@@ -69,7 +68,7 @@
 
 <p>After running the function, you will be prompted to define the animal in the first frame of the video. Click once to select one corner of the tracking box, and click once more to select the opposing corner.</p>
 
-<p><img src="https://cloud.githubusercontent.com/assets/10540385/16355521/e27c4cd4-3b0c-11e6-9f2f-2e8f841ef308.jpg" alt="animal\_selection"></p>
+<p><img src="https://cloud.githubusercontent.com/assets/10540385/16355521/e27c4cd4-3b0c-11e6-9f2f-2e8f841ef308.jpg" alt="animal\_selection">  </p>
 
 <p>You will then be prompted to define the edges of the arena. Again, select the opposing corners on the image that mark the edges of the arena.</p>
 
@@ -86,13 +85,28 @@
 
 <p><img src="https://cloud.githubusercontent.com/assets/10540385/16355859/837b3d7e-3b18-11e6-9884-9e042ed8f0ce.jpg" alt="plotpath\_example"></p>
 
-<hr>
+<p>   </p>
 
 <div class="highlight highlight-source-r"><pre> plotSummary(<span class="pl-smi">path.list</span>)</pre></div>
 
-<p>The <em>plotSummary()</em> function returns a four-paneled plot summariing the the animal's path, i.e. cumulative distance and velocity over time, and absolute and relative bearings across frames.</p>
+<p>The <em>plotSummary()</em> function returns a four-paneled plot summarising the the animal's path, i.e. cumulative distance and velocity over time, and absolute and relative bearings across frames.</p>
 
 <p><img src="https://cloud.githubusercontent.com/assets/10540385/16355860/8f92255a-3b18-11e6-8b48-d8961536dad6.jpg" alt="plotsummary\_example"></p>
+
+<p>   </p>
+
+<div class="highlight highlight-source-r"><pre>makeVideo(<span class="pl-smi">dirpath</span>, <span class="pl-smi">xarena</span>, <span class="pl-smi">yarena</span>, <span class="pl-smi">fps</span>, <span class="pl-v">box</span> <span class="pl-k">=</span> <span class="pl-c1">2</span>, <span class="pl-v">contrast</span> <span class="pl-k">=</span> <span class="pl-c1">0.5</span>)</pre></div>
+
+<p>You can also produce a video output of the animal's movement, along with summary plots, using the <em>makeVideo()</em> function. The function variables are the same as the main tracking function above, but instead of returning a list of data, an mp4 file will be saved in the same directory as the original video.</p>
+
+<p><img src="https://cloud.githubusercontent.com/assets/10540385/16360174/3a8ab69c-3ba6-11e6-82b8-e72363e2bf31.gif" alt="makevideo\_example"></p>
+
+<p>   </p>
+
+<h4>
+<a id="4-troubleshooting" class="anchor" href="#4-troubleshooting" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4. Troubleshooting</h4>
+
+<p>If your animal is not being tracked properly, use the <em>diagnosticPDF()</em> function to view the tracking behaviour in each frame. Function variables are again the same as the main tracking function but in addition to returning a list of data, a pdf file will be saved with a page of plots for each frame. These can be used to visually compare the data with what is actually happening during tracking.</p>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/aharmer/pathtrackr">pathtrackr</a> is maintained by <a href="https://github.com/aharmer">aharmer</a>.</span>
