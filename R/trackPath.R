@@ -206,7 +206,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
     A = (xpos[j] - xpos[j - 1]) * (xarena/xpix)
     B = (ypos[j] - ypos[j - 1]) * (yarena/ypix)
     distance[count] = sqrt((A^2) + (B^2))
-    abs.angle[count] = ifelse(distance[count] != 0, (atan2(A, B * -1) * (180/pi)) %% 360, abs.angle[count - 1])
+    abs.angle[count] = ifelse(distance[count] != 0 | count == 1, (atan2(A, B * -1) * (180/pi)) %% 360, abs.angle[count - 1])
     rel.angle[count] = ((((abs.angle[count] - abs.angle[count - 1]) %% 360) + 540) %% 360) - 180
     velocity[count] = distance[count]/(1/fps)
     count = count + 1
