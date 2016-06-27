@@ -11,7 +11,7 @@ Description: The 'pathtrackr' package allows for automated video tracking of an
     animal's movement. Using a video file (for machines with FFmpeg installed) or a
     series of still frame jpegs as inputs, tracking functions automatically record
     the position of the animal in each frame and return a list of data and sumamry
-    statistics. Also included are plotting and disgnostic functions.
+    statistics. Also included are plotting and diagnostic functions.
 License: GPL-3
 LazyData: TRUE
 Depends:
