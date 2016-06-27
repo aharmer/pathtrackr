@@ -15,11 +15,12 @@ Description: The 'pathtrackr' package allows for automated video tracking of an
 License: GPL-3
 LazyData: TRUE
 Depends:
+    raster
+Imports:
     ggplot2,
     gridExtra,
     jpeg,
     marmap,
-    raster,
     SDMTools,
     viridis
 RoxygenNote: 5.0.1
