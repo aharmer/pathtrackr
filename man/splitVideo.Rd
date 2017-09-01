@@ -27,4 +27,3 @@ The tracking functions within the \code{pathtrackr} package do not require high 
 \note{
 \code{splitVideo} requires FFmpeg to be installed on your machine. FFmpeg is a cross-platform, open-source video editing tool. It can be downloaded from \url{https://ffmpeg.org}.
 }
-

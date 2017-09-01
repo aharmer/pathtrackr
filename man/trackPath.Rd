@@ -4,7 +4,7 @@
 \alias{trackPath}
 \title{Track an animal's movement across a series of still frames}
 \usage{
-trackPath(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5)
+trackPath(dirpath, xarena, yarena, fps, box = 1)
 }
 \arguments{
 \item{dirpath}{a character string specifying a directory containing only jpeg files extracted from a video}
@@ -16,8 +16,6 @@ trackPath(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5)
 \item{fps}{an integer specifying the frame rate at which jpegs were extracted from a video; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations}
 
 \item{box}{an integer specifying the size of the tracking box relative to the initial animal selection box; a larger box size will help prevent the animal being lost (useful for fast moving animals) but will also increase sensitivity to background and lighting changes (default 2)}
-
-\item{contrast}{a value between 0 and 1 specifying the contrast threshold for distinguishing between the animal and background; by default \code{contrast} is set to 0.5, which will suit most situations, but may need adjusting for very low contrast videos}
 }
 \value{
 A list containing a matrix of xy co-ordinates of the animal in each frame, a matrix of movement data including the distance, velocity and trajectories of movement between frames, and summary statistics.
@@ -26,6 +24,5 @@ A list containing a matrix of xy co-ordinates of the animal in each frame, a mat
 This function is the core of the \code{pathtrackr} package. It takes a series of jpegs (extracted from a video) as inputs and tracks an animal's movement across frames. A list is returned containing the xy co-ordinates of the animal in each frame, as well as summary statistics. The returned list can be called for plotting and further functions in the \code{pathtrackr} package.
 }
 \details{
-\code{trackPath} tracks an individual animal's movement across a series of still frames. The function utilises a focusing box to limit the search area for the animal relative to its previous position. This makes \code{trackPath} relatively robust to background lighting changes, extraneous backgroud movement and jpeg noise. It can also handle a dark animal on a light background and vice versa, but will not perform well if the contrast within the background is greater than the contrast between the animal and background.
+\code{trackPath} tracks an individual animal's movement across a series of still frames. The function utilises a focusing box to limit the search area for the animal relative to its previous position. This makes \code{trackPath} relatively robust to background lighting changes, extraneous backgroud movement and jpeg noise. It can  handle a dark animal on a light background and vice versa, as well as heterogenous backgrounds where the animal is at times darker and lighter than the background.
 }
-

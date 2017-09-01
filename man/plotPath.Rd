@@ -16,6 +16,5 @@ A density plot of time spent in a position overlaid with the tracked animal's pa
 This function plots the path of an animal tracked using the \code{trackPath} function.
 }
 \details{
-This functions relies on the \code{smoothScatter} function from the base \code{graphics} package.
+This function relies on the ggplot package.
 }
-
