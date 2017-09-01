@@ -6,195 +6,184 @@
 #' @param yarena an integer specifying the arena height in mm; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations
 #' @param fps an integer specifying the frame rate at which jpegs were extracted from a video; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations
 #' @param box an integer specifying the size of the tracking box relative to the initial animal selection box; a larger box size will help prevent the animal being lost (useful for fast moving animals) but will also increase sensitivity to background and lighting changes (default 2)
-#' @param contrast a value between 0 and 1 specifying the contrast threshold for distinguishing between the animal and background; by default \code{contrast} is set to 0.5, which will suit most situations, but may need adjusting for very low contrast videos
-#' @details \code{trackPath} tracks an individual animal's movement across a series of still frames. The function utilises a focusing box to limit the search area for the animal relative to its previous position. This makes \code{trackPath} relatively robust to background lighting changes, extraneous backgroud movement and jpeg noise. It can also handle a dark animal on a light background and vice versa, but will not perform well if the contrast within the background is greater than the contrast between the animal and background.
+#' @details \code{trackPath} tracks an individual animal's movement across a series of still frames. The function utilises a focusing box to limit the search area for the animal relative to its previous position. This makes \code{trackPath} relatively robust to background lighting changes, extraneous backgroud movement and jpeg noise. It can  handle a dark animal on a light background and vice versa, as well as heterogenous backgrounds where the animal is at times darker and lighter than the background.
 #' @return A list containing a matrix of xy co-ordinates of the animal in each frame, a matrix of movement data including the distance, velocity and trajectories of movement between frames, and summary statistics.
-#' @importFrom jpeg readJPEG
 #' @importFrom raster raster extent select
-#' @importFrom SDMTools COGravity
+#' @importFrom pbapply pboptions pbapply pblapply
+#' @importFrom abind abind
+#' @importFrom EBImage bwlabel opening thresh
+#' @importFrom imager isoblur as.cimg
+#' @importFrom plyr count
 #' @export
-trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
+trackPath = function(dirpath, xarena, yarena, fps, box = 1) {
 
-  xpos = c()
-  ypos = c()
-  breaks = c()
-  break.count = 1
-  animal.size = c()
-  animal.last = c()
+  if (length(dir(dirpath, "*.jpg")) > 0) {
+    file.list = list.files(dirpath, full.names = TRUE)
+  } else {
+    stop("No files were found... check that the path to your directory is correct and that it contains only jpg files.")
+  }
 
-  file.list = list.files(dirpath, full.names = T)
-  frame.calib = jpeg::readJPEG(file.list[1])
-  plot(raster::raster(file.list[1], band = 2), col = gray.colors(256))
+  # Set progress bar options
+  pbapply::pboptions(type = "txt", char = ":")
+  pbapp = create_progress_bar(name = "text", style = 3, char = ":", width = 50)
 
-  message("Select a portion of the image that includes the entire animal...")
+  # Load all frames into an array
+  message("Loading video frames...")
   flush.console()
-  animal.crop = as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
-  animal.frame = frame.calib[(nrow(frame.calib) - animal.crop[3]):(nrow(frame.calib) - animal.crop[4]), animal.crop[1]:animal.crop[2], 1:3]
-  animal.gray = (animal.frame[,,1] * 0.2126) + (animal.frame[,,2] * 0.7152) + (animal.frame[,,3] * 0.0722)
-  animal.mean = mean(animal.gray)
+  cube = abind::abind(pbapply::pblapply(file.list, greyJPEG), along = 3)
 
-  bg.edge1 = animal.gray[1,1:ncol(animal.gray)]
-  bg.edge2 = animal.gray[nrow(animal.gray),1:ncol(animal.gray)]
-  bg.edge3 = animal.gray[1:nrow(animal.gray),1]
-  bg.edge4 = animal.gray[1:nrow(animal.gray), ncol(animal.gray)]
-  bg.mean = mean(c(bg.edge1, bg.edge2, bg.edge3, bg.edge4))
-
-  thresh = animal.mean - bg.mean
-
+  # Crop array to area of interest if needed
   message("Define the opposing corners of the entire arena...")
   flush.console()
-  bg.crop = as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
-  frame.bg = frame.calib[(nrow(frame.calib) - bg.crop[3]):(nrow(frame.calib) - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:3]
-  xpix = ncol(frame.bg)
-  ypix = nrow(frame.bg)
+  plot(raster::raster(file.list[1], band = 2), col = gray.colors(256), asp = 1)
+  bg.crop = base::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
+  cube = cube[(dim(cube)[1] - bg.crop[3]):(dim(cube)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:length(file.list)]
 
-  ref.x1 = animal.crop[1] - bg.crop[1]
-  ref.x2 = ref.x1 + (animal.crop[2] - animal.crop[1])
-  ref.y1 = animal.crop[3] - bg.crop[3]
-  ref.y2 = ref.y1 + (animal.crop[4] - animal.crop[3])
+  # Get aniaml tracking box in first frame
+  bg.ref = reflect(cube[,,1])
+  bg.dim = dim(bg.ref)
+  message("Select a portion of the image that includes the entire animal...")
+  flush.console()
+  plot(raster::raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1)
+  animal.crop = round(base::as.vector(raster::extent(raster::select(raster::raster(bg.ref, xmn = 0, xmx = bg.dim[1], ymn = 0, ymx = bg.dim[2])))))
 
-  frame.ref = frame.bg
-  frame.ref = (frame.ref[,,1] * 0.2126) + (frame.ref[,,2] * 0.7152) + (frame.ref[,,3] * 0.0722)
-  frame.ref[ref.y1:ref.y2, ref.x1:ref.x2] = bg.mean
+  ref.x1 = animal.crop[1]
+  ref.x2 = animal.crop[2]
+  ref.y1 = animal.crop[4]
+  ref.y2 = animal.crop[3]
+  dim.x = abs(ref.x1 - ref.x2)
+  dim.y = abs(ref.y1 - ref.y2)
 
-  pb = txtProgressBar(min = 0, max = length(file.list), initial = 0, style = 3)
+  # Generate background reference frame
+  message("Generating background reference frame...")
+  flush.console()
+  cube.med = cube.med = pbapply::pbapply(cube, 1:2, median)
 
-  for (i in 1:length(file.list)) {
+  # Subtract background from all frames
+  message("Subtracting background from each frame...")
+  flush.console()
+  cube.bgs = plyr::aaply(cube, 3, function(x) {abs(x - cube.med)}, .progress = pbapp)
+  cube.bgs = aperm(cube.bgs, c(2,3,1))
+  rm(cube)
 
-    frame.new = jpeg::readJPEG(file.list[i])
-    frame.new = frame.new[(nrow(frame.new) - bg.crop[3]):(nrow(frame.new) - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:3]
-    frame.new = (frame.new[,,1] * 0.2126) + (frame.new[,,2] * 0.7152) + (frame.new[,,3] * 0.0722)
-    frame.diff = frame.new - frame.ref
+  message("Tracking animal...")
+  flush.console()
+  # Loop through frames fitting tracking box and extracting animal position etc.
+  xpos = c()
+  ypos = c()
+  animal.size = c()
+  breaks = c()
+  break.count = 0
+  animal.last = c()
+  blur = 5
+  min.animal = 0.25
+  max.animal = 1.75
 
+  pbloop = txtProgressBar(min = 0, max = length(file.list), style = 3, char = ":", width = 50)
+
+  for (i in 1:dim(cube.bgs)[3]) {
+
+    # For first frame...
     if (i == 1) {
-      track.box = frame.diff[ref.y2:ref.y1, ref.x1:ref.x2]
-      track.box = (track.box - min(track.box))/(max(track.box) - min(track.box))
 
-      if (thresh < 0) {
-        frame.shift = matrix(1, nrow(frame.diff), ncol(frame.diff))
-        frame.shift[ref.y2:ref.y1, ref.x1:ref.x2] = track.box
-        animal.x = which(frame.shift < contrast, arr.ind = T)[,2]
-        animal.y = (1 - (which(frame.shift < contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
-        z = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
-        wt = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
-        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
-        animal.last = which(frame.shift < contrast)
+      # Find, segment and label blobs, then fit an ellipse
+      tbox = reflect(cube.bgs[,,i][ref.y1:ref.y2,ref.x1:ref.x2])
+      tbox.bin = as.matrix(EBImage::bwlabel(EBImage::opening(EBImage::thresh(imager::isoblur(imager::as.cimg(tbox), blur)))))
+      animal = ellPar(which(tbox.bin == 1, arr.ind = TRUE))
+      animal.last = which(tbox.bin == 1)
 
-      } else {
-        frame.shift = matrix(0, nrow(frame.diff), ncol(frame.diff))
-        frame.shift[ref.y2:ref.y1, ref.x1:ref.x2] = track.box
-        animal.x = which(frame.shift > contrast, arr.ind = T)[,2]
-        animal.y = (1 - (which(frame.shift > contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
-        z = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
-        wt = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
-        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
-      }
-      xpos[i] = COG1[1]
-      ypos[i] = nrow(frame.diff) - COG1[3]
-      animal.size[i] = length(animal.x)
+      # Correct xy positions relative to entire frame and store
+      xpos[i] = round(animal$centre[2] + ref.x1)
+      ypos[i] = round(animal$centre[1] + ref.y2)
 
+      # Store animal size
+      animal.size[i] = animal$area
+
+      # For the remaining frames...
     } else {
-      x1 = xpos[i - 1] - (abs(ref.x1 - ref.x2)) * box
+
+      # Calculate co-oordinates to redraw tracking box around last position
+      if (!is.na(tail(xpos, 1))) {x1 = xpos[i - 1] - dim.x * box}
       if (x1 < 0) {x1 = 0}
-      if (x1 > ncol(frame.diff)) {x1 = ncol(frame.diff)}
-      x2 = xpos[i - 1] + (abs(ref.x1 - ref.x2)) * box
+      if (x1 > bg.dim[2]) {x1 = bg.dim[2]}
+      if (!is.na(tail(xpos, 1))) {x2 = xpos[i - 1] + dim.x * box}
       if (x2 < 0) {x2 = 0}
-      if (x2 > ncol(frame.diff)) {x2 = ncol(frame.diff)}
-      y1 = ypos[i - 1] - (abs(ref.y1 - ref.y2)) * box
+      if (x2 > bg.dim[2]) {x2 = bg.dim[2]}
+      if (!is.na(tail(ypos, 1))) {y1 = ypos[i - 1] - dim.y * box}
       if (y1 < 0) {y1 = 0}
-      if (y1 > nrow(frame.diff)) {y1 = nrow(frame.diff)}
-      y2 = ypos[i - 1] + (abs(ref.y1 - ref.y2)) * box
+      if (y1 > bg.dim[1]) {y1 = bg.dim[1]}
+      if (!is.na(tail(ypos, 1))) {y2 = ypos[i - 1] + dim.y * box}
       if (y2 < 0) {y2 = 0}
-      if (y2 > nrow(frame.diff)) {y2 = nrow(frame.diff)}
-      track.box = frame.diff[c(y2:y1), c(x1:x2)]
-      track.box = (track.box - min(track.box))/(max(track.box) - min(track.box))
+      if (y2 > bg.dim[1]) {y2 = bg.dim[1]}
 
-      if (thresh < 0) {
-        frame.shift = matrix(1, nrow(frame.diff), ncol(frame.diff))
-        frame.shift[y2:y1, x1:x2] = track.box
-        animal.x = which(frame.shift < contrast, arr.ind = T)[,2]
-        animal.y = (1 - (which(frame.shift < contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
-        z = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
-        wt = rep(1, length = length(which(frame.shift < contrast, arr.ind = T)[,1]))
-        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
+      # Find, segment and label blobs, then fit an ellipse
+      tbox = reflect(cube.bgs[,,i][y2:y1,x1:x2])
+      tbox.bin = as.matrix(EBImage::bwlabel(EBImage::opening(EBImage::thresh(imager::isoblur(imager::as.cimg(tbox), blur)))))
 
-      } else {
-        frame.shift = matrix(0, nrow(frame.diff), ncol(frame.diff))
-        frame.shift[y2:y1, x1:x2] = track.box
-        animal.x = which(frame.shift > contrast, arr.ind = T)[,2]
-        animal.y = (1 - (which(frame.shift > contrast, arr.ind = T)[,1])/nrow(frame.shift)) * nrow(frame.shift)
-        z = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
-        wt = rep(1, length = length(which(frame.shift > contrast, arr.ind = T)[,1]))
-        COG1 = SDMTools::COGravity(animal.x, animal.y, z, wt)
-      }
-      animal.new = which(frame.shift < contrast)
+      # Calculate proportion of overlapping pixels from between current & previous frame
+      animal.new = which(tbox.bin == 1)
       animal.move = (length(na.omit(match(animal.last, animal.new))))/(max(c(length(animal.last), length(animal.new))))
       animal.last = animal.new
 
-      if (length(animal.x) <= mean(animal.size) * 2) {
-        if (animal.move < 0.9) {
-          xpos[i] = COG1[1]
-          ypos[i] = nrow(frame.diff) - COG1[3]
+      # Check if animal is of ~right size
+      if (length(which(tbox.bin == 1)) > mean(animal.size, na.rm = TRUE)*min.animal & length(which(tbox.bin == 1)) < mean(animal.size, na.rm = TRUE)*max.animal) {
+
+        # Check animal has moved my more than 10% of size
+        if (animal.move < 0.95) {
+
+          animal = ellPar(which(tbox.bin == 1, arr.ind = TRUE))
+
+          # Correct xy positions relative to entire frame and store
+          xpos[i] = round(animal$centre[2] + x1)
+          ypos[i] = round(animal$centre[1] + y1)
+
+          # Store animal size
+          animal.size[i] = animal$area
 
         } else {
+
+          # Store last known position of animal and size
           xpos[i] = xpos[i - 1]
           ypos[i] = ypos[i - 1]
+          animal.size[i] = animal.size[i - 1]
         }
-        animal.size[i] = length(animal.x)
 
       } else {
-        if (thresh < 0) {
-          frame.break = ((frame.diff - min(frame.diff))/(max(frame.diff) - min(frame.diff)))
-          frame.break.animal = length(which(frame.break < contrast))
 
-          if (frame.break.animal <= mean(animal.size) * 2) {
-            animal.x = which(frame.break < contrast, arr.ind = T)[,2]
-            animal.y = which(frame.break < contrast, arr.ind = T)[,1]
-            z = rep(1, length = length(which(frame.break < contrast, arr.ind = T)[,1]))
-            wt = rep(1, length = length(which(frame.break < contrast, arr.ind = T)[,1]))
-            COG2 = SDMTools::COGravity(animal.x, animal.y, z, wt)
+        frame.break = reflect(cube.bgs[,,i])
+        frame.break.bin = as.matrix(EBImage::bwlabel(EBImage::opening(EBImage::thresh(imager::isoblur(imager::as.cimg(frame.break), blur)))))
+        blob.pixcount = as.matrix(plyr::count(frame.break.bin[frame.break.bin > 0]))
 
-            xpos[i] = COG2[1]
-            ypos[i] = COG2[3]
+        if (nrow(blob.pixcount) > 1) {
+          frame.break.bin = EBImage::rmObjects(frame.break.bin, blob.pixcount[blob.pixcount[,2] < mean(animal.size, na.rm = TRUE)*min.animal | blob.pixcount[,2] > mean(animal.size, na.rm = TRUE)*max.animal,1])
+        }
 
-          } else {
-            xpos[i] = xpos[i - 1]
-            ypos[i] = ypos[i - 1]
+        if (length(which(frame.break.bin == 1)) > mean(animal.size, na.rm = TRUE)*min.animal & length(which(frame.break.bin == 1)) < mean(animal.size, na.rm = TRUE)*max.animal) {
 
-          }
-          animal.size[i] = animal.size[i - 1]
-          breaks[break.count] = i
-          break.count = break.count + 1
+          animal = ellPar(which(frame.break.bin == 1, arr.ind = TRUE))
+
+          # Correct xy positions relative to entire frame and store
+          xpos[i] = round(animal$centre[2])
+          ypos[i] = bg.dim[1] - round(animal$centre[1])
+
+          # Store animal size
+          animal.size[i] = animal$area
 
         } else {
-          frame.break = ((frame.diff - min(frame.diff))/(max(frame.diff) - min(frame.diff)))
-          frame.break.animal = length(which(frame.break > contrast))
 
-          if (frame.break.animal <= mean(animal.size) * 2) {
-            animal.x = which(frame.break > contrast, arr.ind = T)[,2]
-            animal.y = which(frame.break > contrast, arr.ind = T)[,1]
-            z = rep(1, length = length(which(frame.break > contrast, arr.ind = T)[,1]))
-            wt = rep(1, length = length(which(frame.break > contrast, arr.ind = T)[,1]))
-            COG2 = SDMTools::COGravity(animal.x, animal.y, z, wt)
-            xpos[i] = COG2[1]
-            ypos[i] = COG2[3]
+          # Mark position and size as unknown
+          xpos[i] = NA
+          ypos[i] = NA
+          animal.size[i] = NA
 
-          } else {
-            xpos[i] = xpos[i - 1]
-            ypos[i] = ypos[i - 1]
-
-          }
-          animal.size[i] = animal.size[i - 1]
+          # Store breaks
           breaks[break.count] = i
           break.count = break.count + 1
         }
       }
     }
-
-    setTxtProgressBar(pb, i)
-
+    setTxtProgressBar(pbloop, i)
   }
-  ypos = nrow(frame.ref) - ypos
 
   time = seq(0, length.out = length(xpos), by = 1/fps)
   distance = c()
@@ -203,8 +192,8 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
   velocity = c()
   count = 1
   for (j in 2:length(xpos)) {
-    A = (xpos[j] - xpos[j - 1]) * (xarena/xpix)
-    B = (ypos[j] - ypos[j - 1]) * (yarena/ypix)
+    A = (xpos[j] - xpos[j - 1]) * (xarena/bg.dim[2])
+    B = (ypos[j] - ypos[j - 1]) * (yarena/bg.dim[1])
     distance[count] = sqrt((A^2) + (B^2))
     abs.angle[count] = ifelse(distance[count] != 0 | count == 1, (atan2(A, B * -1) * (180/pi)) %% 360, abs.angle[count - 1])
     rel.angle[count] = ((((abs.angle[count] - abs.angle[count - 1]) %% 360) + 540) %% 360) - 180
@@ -224,10 +213,10 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 2, contrast = 0.5) {
   total.duration = movement[nrow(movement),5]
 
   if (length(breaks) > 0) {
-    warning("Tracking failed in a total of ", length(breaks), " frames: consider using a higher frame rate or increasing 'box'")
+    warning("Tracking failed in a total of ", length(breaks), " frames: consider using a higher frame rate or increasing the tracking 'box' size")
     flush.console()
   }
 
-  return(list(position = cbind(xpos, ypos), dim.pix = c(xpix, ypix), dim.arena = c(xarena, yarena), fps = fps, movement = movement, total.distance = total.distance, mean.velocity = mean.velocity, total.duration = total.duration, breaks = breaks))
+  return(list(position = cbind(xpos, ypos), dim.pix = c(bg.dim[2], bg.dim[1]), dim.arena = c(xarena, yarena), fps = fps, movement = movement, total.distance = total.distance, mean.velocity = mean.velocity, total.duration = total.duration, breaks = breaks))
 
 }
