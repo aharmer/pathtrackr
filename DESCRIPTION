@@ -16,10 +16,15 @@ License: GPL-3
 LazyData: TRUE
 Depends:
     ggplot2,
+	plyr,
+	pbapply,
+	abind,
+	cluster,
     gridExtra,
     jpeg,
     marmap,
-    SDMTools,
+    EBImage,
+	imager,
     viridis,
     raster
 RoxygenNote: 6.0.1
