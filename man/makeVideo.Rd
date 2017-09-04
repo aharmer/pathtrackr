@@ -4,7 +4,7 @@
 \alias{makeVideo}
 \title{Make a video of an animal's tracked path}
 \usage{
-makeVideo(dirpath, xarena, yarena, fps, box = 1)
+makeVideo(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9)
 }
 \arguments{
 \item{dirpath}{a character string specifying a directory containing only jpeg files extracted from a video}
@@ -15,7 +15,9 @@ makeVideo(dirpath, xarena, yarena, fps, box = 1)
 
 \item{fps}{an integer specifying the frame rate at which jpegs were extracted from a video; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations}
 
-\item{box}{an integer specifying the size of the tracking box relative to the initial animal selection box; a larger box size will help prevent the animal being lost (useful for fast moving animals) but will also increase sensitivity to background and lighting changes (default 2)}
+\item{box}{an integer specifying the size of the tracking box relative to the initial animal selection box; a larger box size will help prevent the animal being lost (useful for fast moving animals) but will also increase sensitivity to background and lighting changes (default 1)}
+
+\item{jitter.damp}{a value between 0.5 and 1. Reduces noise in the animal's track, useful if the animal's track is very jittery, which may overestiamte path length. A value of 1 indicates no jitter damping, 0.5 indicates extreme damping and is unlikely to be useful}
 }
 \value{
 An mp4 video of an animal's movement containing the original video, tracking behaviour plots and summary plots.

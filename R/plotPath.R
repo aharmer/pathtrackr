@@ -20,8 +20,8 @@ ggplot(aes(xpos, ypos), data = dat) +
   geom_path(na.rm = TRUE) +
   geom_point(aes(x = dat[1,1], y = dat[1,2]), size = 3, color = "blue") +
   geom_point(aes(x = dat[nrow(dat),1], y = dat[nrow(dat),2]), size = 3, color = "red") +
-  xlim(0, x_max) +
-  ylim(0, y_max) +
+  scale_x_continuous(limits = c(0, x_max), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, y_max), expand = c(0, 0)) +
   xlab("Distance (mm)") +
   ylab("Distance (mm)") +
   theme_bw() +

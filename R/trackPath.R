@@ -5,7 +5,8 @@
 #' @param xarena an integer specifying the arena width in mm; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations
 #' @param yarena an integer specifying the arena height in mm; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations
 #' @param fps an integer specifying the frame rate at which jpegs were extracted from a video; this value is used for distance and velocity calculations, an incorrect value will not cause an error but will result in inaccurate calculations
-#' @param box an integer specifying the size of the tracking box relative to the initial animal selection box; a larger box size will help prevent the animal being lost (useful for fast moving animals) but will also increase sensitivity to background and lighting changes (default 2)
+#' @param box an integer specifying the size of the tracking box relative to the initial animal selection box; a larger box size will help prevent the animal being lost (useful for fast moving animals) but will also increase sensitivity to background and lighting changes (default 1)
+#' @param jitter.damp a value between 0.5 and 1. Reduces noise in the animal's track, useful if the animal's track is very jittery, which may overestiamte path length. A value of 1 indicates no jitter damping, 0.5 indicates extreme damping and is unlikely to be useful
 #' @details \code{trackPath} tracks an individual animal's movement across a series of still frames. The function utilises a focusing box to limit the search area for the animal relative to its previous position. This makes \code{trackPath} relatively robust to background lighting changes, extraneous backgroud movement and jpeg noise. It can  handle a dark animal on a light background and vice versa, as well as heterogenous backgrounds where the animal is at times darker and lighter than the background.
 #' @return A list containing a matrix of xy co-ordinates of the animal in each frame, a matrix of movement data including the distance, velocity and trajectories of movement between frames, and summary statistics.
 #' @importFrom raster raster extent select
@@ -15,7 +16,7 @@
 #' @importFrom imager isoblur as.cimg
 #' @importFrom plyr count
 #' @export
-trackPath = function(dirpath, xarena, yarena, fps, box = 1) {
+trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9) {
 
   if (length(dir(dirpath, "*.jpg")) > 0) {
     file.list = list.files(dirpath, full.names = TRUE)
@@ -35,7 +36,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 1) {
   # Crop array to area of interest if needed
   message("Define the opposing corners of the entire arena...")
   flush.console()
-  plot(raster::raster(file.list[1], band = 2), col = gray.colors(256), asp = 1)
+  plot(raster::raster(file.list[1], band = 2), col = gray.colors(256), asp = 1, legend = FALSE)
   bg.crop = base::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
   cube = cube[(dim(cube)[1] - bg.crop[3]):(dim(cube)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:length(file.list)]
 
@@ -44,7 +45,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 1) {
   bg.dim = dim(bg.ref)
   message("Select a portion of the image that includes the entire animal...")
   flush.console()
-  plot(raster::raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1)
+  plot(raster::raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1, legend = FALSE)
   animal.crop = round(base::as.vector(raster::extent(raster::select(raster::raster(bg.ref, xmn = 0, xmx = bg.dim[1], ymn = 0, ymx = bg.dim[2])))))
 
   ref.x1 = animal.crop[1]
@@ -129,7 +130,7 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 1) {
       if (length(which(tbox.bin == 1)) > mean(animal.size, na.rm = TRUE)*min.animal & length(which(tbox.bin == 1)) < mean(animal.size, na.rm = TRUE)*max.animal) {
 
         # Check animal has moved my more than 10% of size
-        if (animal.move < 0.95) {
+        if (animal.move < jitter.damp) {
 
           animal = ellPar(which(tbox.bin == 1, arr.ind = TRUE))
 
@@ -208,12 +209,12 @@ trackPath = function(dirpath, xarena, yarena, fps, box = 1) {
   movement[, 3] = c(0, abs.angle[1], rel.angle[2:length(rel.angle)])
   movement[, 4] = c(0, velocity)
   movement[, 5] = c(time)
-  total.distance = round(sum(movement[,1]))
-  mean.velocity = mean(movement[,4])
+  total.distance = round(sum(movement[,1], na.rm = TRUE))
+  mean.velocity = mean(movement[,4], na.rm = TRUE)
   total.duration = movement[nrow(movement),5]
 
   if (length(breaks) > 0) {
-    warning("Tracking failed in a total of ", length(breaks), " frames: consider using a higher frame rate or increasing the tracking 'box' size")
+    warning("Tracking was not possible for ", length(breaks), " frames: you can proceed with this tracked path but you might consider using a higher frame rate or increasing the tracking 'box' size to improve the result.")
     flush.console()
   }
 

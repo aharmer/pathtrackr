@@ -13,7 +13,7 @@
 #' @importFrom imager isoblur as.cimg
 #' @importFrom plyr count
 #' @export
-diagnosticPDF = function(dirpath, xarena, yarena, fps, box = 1) {
+diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9) {
 
   if (length(dir(dirpath, "*.jpg")) > 0) {
     file.list = list.files(dirpath, full.names = TRUE)
@@ -62,7 +62,6 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps, box = 1) {
   flush.console()
   cube.bgs = plyr::aaply(cube, 3, function(x) {abs(x - cube.med)}, .progress = pbapp)
   cube.bgs = aperm(cube.bgs, c(2,3,1))
-  # rm(cube)
 
   message("Tracking animal...")
   flush.console()
@@ -148,7 +147,7 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps, box = 1) {
       if (length(which(tbox.bin == 1)) > mean(animal.size, na.rm = TRUE)*min.animal & length(which(tbox.bin == 1)) < mean(animal.size, na.rm = TRUE)*max.animal) {
 
         # Check animal has moved my more than 10% of size
-        if (animal.move < 0.95) {
+        if (animal.move < jitter.damp) {
 
           animal = ellPar(which(tbox.bin == 1, arr.ind = TRUE))
 
@@ -235,7 +234,8 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps, box = 1) {
 
       plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[2]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[2] * (xarena/bg.dim[2])), ylim = c(0, bg.dim[1] * (yarena/bg.dim[1])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
 
-      plot(temp.movement[, 3], cumsum(temp.movement[, 1]), type = "l", lwd = 2, xlab = "Time (s)", ylab = "Distance (mm)", bty = "l", xlim = c(0, length(file.list) * (1/fps)), col = "#08306B", cex = 1.5)
+      cumDistance = cumsum(ifelse(is.na(temp.movement[, 1]), 0, temp.movement[, 1])) + temp.movement[, 1] * 0
+      plot(temp.movement[, 3], cumDistance, type = "l", lwd = 2, xlab = "Time (s)", ylab = "Distance (mm)", bty = "l", xlim = c(0, length(file.list) * (1/fps)), col = "#08306B", cex = 1.5)
 
       plot(temp.movement[, 3], temp.movement[, 2], type = "l", lwd = 1.5, xlab = "Time (s)", ylab = "Velocity (mm/s)", bty = "l", xlim = c(0, length(file.list) * (1/fps)), col = "#08306B", cex = 1.5)
 
@@ -273,9 +273,11 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps, box = 1) {
   total.duration = movement[nrow(movement),5]
 
   if (length(breaks) > 0) {
-    warning("Tracking failed in a total of ", length(breaks), " frames: consider using a higher frame rate or increasing the tracking 'box' size")
+    warning("Tracking was not possible for ", length(breaks), " frames: you can proceed with this tracked path but you might consider using a higher frame rate or increasing the tracking 'box' size to improve the result.")
     flush.console()
   }
+
+  rm(cube)
 
   return(list(position = cbind(xpos, ypos), dim.pix = c(bg.dim[2], bg.dim[1]), dim.arena = c(xarena, yarena), fps = fps, movement = movement, total.distance = total.distance, mean.velocity = mean.velocity, total.duration = total.duration, breaks = breaks))
 
