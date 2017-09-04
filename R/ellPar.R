@@ -1,7 +1,7 @@
 #' Calculate ellipse parameters
 #'
 #' Calculate ellipse parameters from blobs in binary matrix files.
-#' @param mar a matrix of blobs (generated with a blob detection function)
+#' @param mat a matrix of blobs (generated with a blob detection function)
 #' @return A list of ellipse parameters calculated for the blob in the matrix.
 #' @importFrom cluster ellipsoidhull
 #' @noRd
