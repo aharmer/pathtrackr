@@ -1,7 +1,7 @@
 Package: pathtrackr
 Type: Package
 Title: Video Tracking and Analysis of Animal Movement
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: as.person(c(
     "Aaron Harmer <a.harmer@massey.ac.nz> [aut, cre]",
     "Daniel Thomas <d.b.thomas@massey.ac.nz> [aut]"
@@ -10,16 +10,21 @@ Maintainer: Aaron Harmer <a.harmer@massey.ac.nz>
 Description: The 'pathtrackr' package allows for automated video tracking of an
     animal's movement. Using a video file (for machines with FFmpeg installed) or a
     series of still frame jpegs as inputs, tracking functions automatically record
-    the position of the animal in each frame and return a list of data and sumamry
+    the position of the animal in each frame and return a list of data and summary
     statistics. Also included are plotting and diagnostic functions.
 License: GPL-3
 LazyData: TRUE
 Depends:
     ggplot2,
+	plyr,
+	pbapply,
+	abind,
+	cluster,
     gridExtra,
     jpeg,
     marmap,
-    SDMTools,
+    EBImage,
+	imager,
     viridis,
     raster
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

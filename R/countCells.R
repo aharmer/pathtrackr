@@ -16,11 +16,13 @@ countCells = function(path.list, xgrid, ygrid) {
 
   xtrack = c()
   ytrack = c()
+  dat = na.lomf(path.list$position)
+
   for (i in 2:length(path.list$position[,1])) {
 
-    track = matrix(ncol = length(round(path.list$position[,1][i - 1]):round(path.list$position[,1][i])), nrow = length(round(path.list$position[,2][i - 1]):round(path.list$position[,2][i])))
-    colnames(track) = round(path.list$position[,1][i - 1]):round(path.list$position[,1][i])
-    rownames(track) = round(path.list$position[,2][i - 1]):round(path.list$position[,2][i])
+    track = matrix(ncol = length(round(dat[,1][i - 1]):round(dat[,1][i])), nrow = length(round(dat[,2][i - 1]):round(dat[,2][i])))
+    colnames(track) = round(dat[,1][i - 1]):round(dat[,1][i])
+    rownames(track) = round(dat[,2][i - 1]):round(dat[,2][i])
     marmap::diag.bathy(track, coord = T)
 
     xtrack = append(xtrack, marmap::diag.bathy(track, coord = T)[,2])

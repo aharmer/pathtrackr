@@ -18,4 +18,3 @@ This function produces a summary plot of cumulative distance and velocity over t
 \details{
 \code{plotSummary} uses \code{ggplot2} and \code{gridExtra} to produce a four panel summary plot.
 }
-

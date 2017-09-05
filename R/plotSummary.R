@@ -10,8 +10,9 @@
 plotSummary = function(path.list) {
 
   dat = as.data.frame(path.list$movement)
+  cumDistance = cumsum(ifelse(is.na(dat$distance), 0, dat$distance)) + dat$distance * 0
 
-  plot1 = ggplot2::ggplot(dat, aes(x = time, y = cumsum(distance))) +
+  plot1 = ggplot2::ggplot(dat, aes(x = time, y = cumDistance)) +
     geom_line(color = "grey25") +
     theme_bw() +
     xlab("") +
