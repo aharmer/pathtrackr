@@ -14,7 +14,7 @@
 #' @importFrom abind abind
 #' @importFrom EBImage bwlabel opening thresh
 #' @importFrom imager isoblur as.cimg
-#' @importFrom plyr count
+#' @importFrom plyr count aaply
 #' @export
 trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9) {
 
@@ -25,19 +25,19 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
   }
 
   # Set progress bar options
-  pbapply::pboptions(type = "txt", char = ":")
+  pboptions(type = "txt", char = ":")
   pbapp = create_progress_bar(name = "text", style = 3, char = ":", width = 50)
 
   # Load all frames into an array
   message("Loading video frames...")
   flush.console()
-  cube = abind::abind(pbapply::pblapply(file.list, greyJPEG), along = 3)
+  cube = abind(pblapply(file.list, greyJPEG), along = 3)
 
   # Crop array to area of interest if needed
   message("Define the opposing corners of the entire arena...")
   flush.console()
-  plot(raster::raster(file.list[1], band = 2), col = gray.colors(256), asp = 1, legend = FALSE)
-  bg.crop = base::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
+  plot(raster(file.list[1], band = 2), col = gray.colors(256), asp = 1, legend = FALSE)
+  bg.crop = base::as.vector(extent(select(raster(file.list[1], band = 2))))
   cube = cube[(dim(cube)[1] - bg.crop[3]):(dim(cube)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:length(file.list)]
 
   # Get aniaml tracking box in first frame
@@ -45,8 +45,8 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
   bg.dim = dim(bg.ref)
   message("Select a portion of the image that includes the entire animal...")
   flush.console()
-  plot(raster::raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1, legend = FALSE)
-  animal.crop = round(base::as.vector(raster::extent(raster::select(raster::raster(bg.ref, xmn = 0, xmx = bg.dim[1], ymn = 0, ymx = bg.dim[2])))))
+  plot(raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1, legend = FALSE)
+  animal.crop = round(base::as.vector(extent(select(raster(bg.ref, xmn = 0, xmx = bg.dim[1], ymn = 0, ymx = bg.dim[2])))))
 
   ref.x1 = animal.crop[1]
   ref.x2 = animal.crop[2]
@@ -58,12 +58,12 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
   # Generate background reference frame
   message("Generating background reference frame...")
   flush.console()
-  cube.med = cube.med = pbapply::pbapply(cube, 1:2, median)
+  cube.med = cube.med = pbapply(cube, 1:2, median)
 
   # Subtract background from all frames
   message("Subtracting background from each frame...")
   flush.console()
-  cube.bgs = plyr::aaply(cube, 3, function(x) {abs(x - cube.med)}, .progress = pbapp)
+  cube.bgs = aaply(cube, 3, function(x) {abs(x - cube.med)}, .progress = pbapp)
   cube.bgs = aperm(cube.bgs, c(2,3,1))
   rm(cube)
 
@@ -89,7 +89,7 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
 
       # Find, segment and label blobs, then fit an ellipse
       tbox = reflect(cube.bgs[,,i][ref.y1:ref.y2,ref.x1:ref.x2])
-      tbox.bin = as.matrix(EBImage::bwlabel(EBImage::opening(EBImage::thresh(imager::isoblur(imager::as.cimg(tbox), blur)))))
+      tbox.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(tbox), blur)))))
       animal = ellPar(which(tbox.bin == 1, arr.ind = TRUE))
       animal.last = which(tbox.bin == 1)
 
@@ -119,7 +119,7 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
 
       # Find, segment and label blobs, then fit an ellipse
       tbox = reflect(cube.bgs[,,i][y2:y1,x1:x2])
-      tbox.bin = as.matrix(EBImage::bwlabel(EBImage::opening(EBImage::thresh(imager::isoblur(imager::as.cimg(tbox), blur)))))
+      tbox.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(tbox), blur)))))
 
       # Calculate proportion of overlapping pixels from between current & previous frame
       animal.new = which(tbox.bin == 1)
@@ -152,11 +152,11 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
       } else {
 
         frame.break = reflect(cube.bgs[,,i])
-        frame.break.bin = as.matrix(EBImage::bwlabel(EBImage::opening(EBImage::thresh(imager::isoblur(imager::as.cimg(frame.break), blur)))))
-        blob.pixcount = as.matrix(plyr::count(frame.break.bin[frame.break.bin > 0]))
+        frame.break.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(frame.break), blur)))))
+        blob.pixcount = as.matrix(count(frame.break.bin[frame.break.bin > 0]))
 
         if (nrow(blob.pixcount) > 1) {
-          frame.break.bin = EBImage::rmObjects(frame.break.bin, blob.pixcount[blob.pixcount[,2] < mean(animal.size, na.rm = TRUE)*min.animal | blob.pixcount[,2] > mean(animal.size, na.rm = TRUE)*max.animal,1])
+          frame.break.bin = rmObjects(frame.break.bin, blob.pixcount[blob.pixcount[,2] < mean(animal.size, na.rm = TRUE)*min.animal | blob.pixcount[,2] > mean(animal.size, na.rm = TRUE)*max.animal,1])
         }
 
         if (length(which(frame.break.bin == 1)) > mean(animal.size, na.rm = TRUE)*min.animal & length(which(frame.break.bin == 1)) < mean(animal.size, na.rm = TRUE)*max.animal) {

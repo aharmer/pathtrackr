@@ -14,7 +14,7 @@ Description: The 'pathtrackr' package allows for automated video tracking of an
     statistics. Also included are plotting and diagnostic functions.
 License: GPL-3
 LazyData: TRUE
-Depends:
+Imports:
     ggplot2,
 	plyr,
 	pbapply,
@@ -22,9 +22,10 @@ Depends:
 	cluster,
     gridExtra,
     jpeg,
-    marmap,
     EBImage,
 	imager,
     viridis,
     raster
+Suggests:
+	marmap
 RoxygenNote: 6.0.1

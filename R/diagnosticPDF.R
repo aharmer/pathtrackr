@@ -4,14 +4,13 @@
 #' @inheritParams trackPath
 #' @details See documentation for \code{\link{trackPath}}.
 #' @return A list containing a matrix of xy co-ordinates of the animal in each frame, a matrix of movement data including the distance, velocity and trajectories of movement between frames, summary statistics, and a diagnostic PDF.
-#' @importFrom jpeg readJPEG
 #' @importFrom raster raster extent select
 #' @importFrom viridis viridis
 #' @importFrom pbapply pboptions pbapply pblapply
 #' @importFrom abind abind
 #' @importFrom EBImage bwlabel opening thresh
 #' @importFrom imager isoblur as.cimg
-#' @importFrom plyr count
+#' @importFrom plyr aaply count
 #' @export
 diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9) {
 
@@ -22,19 +21,19 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
   }
 
   # Set progress bar options
-  pbapply::pboptions(type = "txt", char = ":")
+  pboptions(type = "txt", char = ":")
   pbapp = create_progress_bar(name = "text", style = 3, char = ":", width = 50)
 
   # Load all frames into an array
   message("Loading video frames...")
   flush.console()
-  cube = abind::abind(pbapply::pblapply(file.list, greyJPEG), along = 3)
+  cube = abind(pblapply(file.list, greyJPEG), along = 3)
 
   # Crop array to area of interest if needed
   message("Define the opposing corners of the entire arena...")
   flush.console()
-  plot(raster::raster(file.list[1], band = 2), col = gray.colors(256), asp = 1)
-  bg.crop = base::as.vector(raster::extent(raster::select(raster::raster(file.list[1], band = 2))))
+  plot(raster(file.list[1], band = 2), col = gray.colors(256), asp = 1)
+  bg.crop = base::as.vector(extent(select(raster(file.list[1], band = 2))))
   cube = cube[(dim(cube)[1] - bg.crop[3]):(dim(cube)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:length(file.list)]
 
   # Get aniaml tracking box in first frame
@@ -42,8 +41,8 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
   bg.dim = dim(bg.ref)
   message("Select a portion of the image that includes the entire animal...")
   flush.console()
-  plot(raster::raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1)
-  animal.crop = round(base::as.vector(raster::extent(raster::select(raster::raster(bg.ref, xmn = 0, xmx = bg.dim[1], ymn = 0, ymx = bg.dim[2])))))
+  plot(raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1)
+  animal.crop = round(base::as.vector(extent(select(raster(bg.ref, xmn = 0, xmx = bg.dim[1], ymn = 0, ymx = bg.dim[2])))))
 
   ref.x1 = animal.crop[1]
   ref.x2 = animal.crop[2]
@@ -55,12 +54,12 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
   # Generate background reference frame
   message("Generating background reference frame...")
   flush.console()
-  cube.med = pbapply::pbapply(cube, 1:2, median)
+  cube.med = pbapply(cube, 1:2, median)
 
   # Subtract background from all frames
   message("Subtracting background from each frame...")
   flush.console()
-  cube.bgs = plyr::aaply(cube, 3, function(x) {abs(x - cube.med)}, .progress = pbapp)
+  cube.bgs = aaply(cube, 3, function(x) {abs(x - cube.med)}, .progress = pbapp)
   cube.bgs = aperm(cube.bgs, c(2,3,1))
 
   message("Tracking animal...")
@@ -89,7 +88,7 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
 
       # Find, segment and label blobs, then fit an ellipse
       tbox = reflect(cube.bgs[,,i][ref.y1:ref.y2,ref.x1:ref.x2])
-      tbox.bin = as.matrix(EBImage::bwlabel(EBImage::opening(EBImage::thresh(imager::isoblur(imager::as.cimg(tbox), blur)))))
+      tbox.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(tbox), blur)))))
       animal = ellPar(which(tbox.bin == 1, arr.ind = TRUE))
       animal.last = which(tbox.bin == 1)
 
@@ -103,12 +102,12 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
       par(mfrow = c(2, 3), mar = c(5, 5, 2, 3) + 0.1, cex.axis = 1.5, cex.lab = 1.5)
 
       plot(1, 1, xlim = c(1, bg.dim[1]), ylim = c(1, bg.dim[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
-      rasterImage(raster::as.raster(reflect(cube[,,i])), 1, 1, bg.dim[1], bg.dim[2])
+      rasterImage(as.raster(reflect(cube[,,i])), 1, 1, bg.dim[1], bg.dim[2])
 
-      plot(raster::raster(reflect(cube.bgs[,,i])), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::viridis(256))
+      plot(raster(reflect(cube.bgs[,,i])), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
       rect(ref.x1/bg.dim[2], ref.y1/bg.dim[1], ref.x2/bg.dim[2], ref.y2/bg.dim[1], border = "yellow", lwd = 1.5)
 
-      plot(raster::raster(reflect(tbox)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::viridis(256))
+      plot(raster(reflect(tbox)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
       points(round(animal$centre[2])/dim(tbox)[2], round(animal$centre[1])/dim(tbox)[1], col = "red", pch = 16, cex = 2.5)
 
       plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[2]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[2] * (xarena/bg.dim[2])), ylim = c(0, bg.dim[1] * (yarena/bg.dim[1])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
@@ -136,7 +135,7 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
 
       # Find, segment and label blobs, then fit an ellipse
       tbox = reflect(cube.bgs[,,i][y2:y1,x1:x2])
-      tbox.bin = as.matrix(EBImage::bwlabel(EBImage::opening(EBImage::thresh(imager::isoblur(imager::as.cimg(tbox), blur)))))
+      tbox.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(tbox), blur)))))
 
       # Calculate proportion of overlapping pixels from between current & previous frame
       animal.new = which(tbox.bin == 1)
@@ -169,11 +168,11 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
       } else {
 
         frame.break = reflect(cube.bgs[,,i])
-        frame.break.bin = as.matrix(EBImage::bwlabel(EBImage::opening(EBImage::thresh(imager::isoblur(imager::as.cimg(frame.break), blur)))))
-        blob.pixcount = as.matrix(plyr::count(frame.break.bin[frame.break.bin > 0]))
+        frame.break.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(frame.break), blur)))))
+        blob.pixcount = as.matrix(count(frame.break.bin[frame.break.bin > 0]))
 
         if (nrow(blob.pixcount) > 1) {
-          frame.break.bin = EBImage::rmObjects(frame.break.bin, blob.pixcount[blob.pixcount[,2] < mean(animal.size, na.rm = TRUE)*min.animal | blob.pixcount[,2] > mean(animal.size, na.rm = TRUE)*max.animal,1])
+          frame.break.bin = rmObjects(frame.break.bin, blob.pixcount[blob.pixcount[,2] < mean(animal.size, na.rm = TRUE)*min.animal | blob.pixcount[,2] > mean(animal.size, na.rm = TRUE)*max.animal,1])
         }
 
         if (length(which(frame.break.bin == 1)) > mean(animal.size, na.rm = TRUE)*min.animal & length(which(frame.break.bin == 1)) < mean(animal.size, na.rm = TRUE)*max.animal) {
@@ -220,14 +219,12 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
       par(mfrow = c(2, 3), mar = c(5, 5, 2, 3) + 0.1, cex.axis = 1.5, cex.lab = 1.5)
 
       plot(1, 1, xlim = c(1, bg.dim[1]), ylim = c(1, bg.dim[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
-      rasterImage(raster::as.raster(reflect(cube[,,i])), 1, 1, bg.dim[1], bg.dim[2])
+      rasterImage(as.raster(reflect(cube[,,i])), 1, 1, bg.dim[1], bg.dim[2])
 
-      plot(raster::raster(reflect(cube.bgs[,,i])), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::viridis(256))
+      plot(raster(reflect(cube.bgs[,,i])), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
       rect(x1/bg.dim[2], y1/bg.dim[1], x2/bg.dim[2], y2/bg.dim[1], border = "yellow", lwd = 1.5)
 
-      # segments(xpos[i - 1]/bg.dim[2], ypos[i - 1]/bg.dim[1], xpos[i]/bg.dim[2], ypos[i]/bg.dim[2], col = "red", pch = 16)
-
-      plot(raster::raster(reflect(tbox)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis::viridis(256))
+      plot(raster(reflect(tbox)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
       points(round(animal$centre[2])/dim(tbox)[2], round(animal$centre[1])/dim(tbox)[1], col = "red", pch = 16, cex = 2.5)
 
       segments((xpos[i - 1] - x1)/ncol(tbox), (ypos[i - 1] - y1)/nrow(tbox), (xpos[i] - x1)/ncol(tbox), (ypos[i] - y1)/nrow(tbox), col = "red", pch = 16, lwd = 3)
