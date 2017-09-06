@@ -10,7 +10,7 @@
 #' @importFrom abind abind
 #' @importFrom EBImage bwlabel opening thresh rmObjects
 #' @importFrom imager isoblur as.cimg
-#' @importFrom plyr aaply count create_progress_bar
+#' @importFrom plyr aaply count create_progress_bar progress_text
 #' @export
 diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9) {
 
