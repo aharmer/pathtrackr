@@ -11,6 +11,18 @@
 #' @export
 splitVideo = function(filepath, fps, xpix = 320, ypix = -1) {
 
+  if (!file.exists(filepath)) {
+    stop("No video file was found... check that the file path to your video is correct.")
+  }
+
+  if (file.exists(gsub("\\.", "_COMPRESSED.", filepath))) {
+    unlink(gsub("\\.", "_COMPRESSED.", filepath))
+  }
+
+  if (file.exists(file.path(unlist(strsplit(filepath, "\\."))[1]))) {
+    unlink(file.path(unlist(strsplit(filepath, "\\."))[1]), recursive = TRUE)
+  }
+
   system(paste("ffmpeg -loglevel panic -y -i ", filepath, " -vf scale=", xpix, ":", ypix, " ", gsub("\\.", "_COMPRESSED.", filepath), sep = ""))
 
   dir.create(file.path(unlist(strsplit(filepath, "\\."))[1]), showWarnings = FALSE)
