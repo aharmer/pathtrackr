@@ -26,6 +26,7 @@ Imports:
 	imager,
     viridis,
 	marmap,
+	rgdal,
 	raster
 Remotes:
 	aoles/EBImage
