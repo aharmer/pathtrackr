@@ -11,7 +11,7 @@
 #' @importFrom abind abind
 #' @importFrom EBImage bwlabel opening thresh rmObjects
 #' @importFrom imager isoblur as.cimg
-#' @importFrom plyr count aaply
+#' @importFrom plyr count aaply create_progress_bar
 #' @export
 makeVideo = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9) {
 
