@@ -70,7 +70,7 @@ makeVideo = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
   ypos = c()
   animal.size = c()
   breaks = c()
-  break.count = 0
+  break.count = 1
   animal.last = c()
   blur = 5
   min.animal = 0.25
