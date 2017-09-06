@@ -25,7 +25,8 @@ Imports:
     EBImage,
 	imager,
     viridis,
-    raster
-Suggests:
-	marmap
+	marmap,
+	raster
+Remotes:
+	aoles/EBImage
 RoxygenNote: 6.0.1

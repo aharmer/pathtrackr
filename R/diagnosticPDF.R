@@ -8,7 +8,7 @@
 #' @importFrom viridis viridis
 #' @importFrom pbapply pboptions pbapply pblapply
 #' @importFrom abind abind
-#' @importFrom EBImage bwlabel opening thresh
+#' @importFrom EBImage bwlabel opening thresh rmObjects
 #' @importFrom imager isoblur as.cimg
 #' @importFrom plyr aaply count
 #' @export
@@ -30,7 +30,7 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
   cube = abind(pblapply(file.list, greyJPEG), along = 3)
 
   # Crop array to area of interest if needed
-  message("Define the opposing corners of the entire arena...")
+  message("Click once on the top left corner of your arena, followed by clicking once on the bottom right corner of your arena, to define the opposing corners of the entire arena...")
   flush.console()
   plot(raster(file.list[1], band = 2), col = gray.colors(256), asp = 1)
   bg.crop = base::as.vector(extent(select(raster(file.list[1], band = 2))))
@@ -39,7 +39,7 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
   # Get aniaml tracking box in first frame
   bg.ref = reflect(cube[,,1])
   bg.dim = dim(bg.ref)
-  message("Select a portion of the image that includes the entire animal...")
+  message("Imagine a rectangle that defines the minimum region of your arena that contains your whole animal. Click once to define the top left corner of this rectangle, followed by clicking once to define the bottom right corner of this rectangle...")
   flush.console()
   plot(raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1)
   animal.crop = round(base::as.vector(extent(select(raster(bg.ref, xmn = 0, xmx = bg.dim[1], ymn = 0, ymx = bg.dim[2])))))
