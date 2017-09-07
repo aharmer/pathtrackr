@@ -15,6 +15,8 @@
 #' @export
 makeVideo = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9) {
 
+  require(raster)
+
   if (length(dir(dirpath, "*.jpg")) > 0) {
     file.list = list.files(dirpath, full.names = TRUE)
   } else {
