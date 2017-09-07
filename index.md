@@ -22,6 +22,8 @@ You can install *pathtrackr* directly within R using the *install\_github()* fun
 install_github("aharmer/pathtrackr")
 ```
 
+Depending on your setup, you may also need to install *Rtools* first. If you need *Rtools* you will get an error message during *pathtrackr* installation. Just install *Rtools* then reinstall *pathtrackr*.
+
 Alternatively, you can manually download and install the source package from the [pathtrackr](https://aharmer.github.io/pathtrackr/) webpage.
 
 If you manually install *pathtrackr*, the following packages are also required: *ggplot2, plyr, pbapply, abind, cluster, gridExtra, jpeg, marmap, EBImage, imager, viridis, raster*.
