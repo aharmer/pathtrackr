@@ -7,6 +7,8 @@ Visualising and analysing animal movement patterns is essential to many behaviou
 Updates
 -------
 
+Version 1.2 of *pathtrackr* includes some general speed improvements and fixes some minor plotting bugs.
+
 In version 1.1 of *pathtrackr* we have updated the *trackPath()* function to now be able to handle not only hetergenous backgrounds, but instances where the animal is at times lighter and at times darker than the background. This is demonstrated in an extreme example below, where a brown spider is moving across a black and white checkerboard pattern.
 
 <img src="https://user-images.githubusercontent.com/10540385/33350459-c65e6446-d503-11e7-9b16-d61ef7eddb97.gif" width="600" style="display: block; margin: auto;" />
