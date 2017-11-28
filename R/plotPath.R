@@ -11,8 +11,8 @@ plotPath = function(path.list) {
 dat = as.data.frame(path.list$position)
 dat$xpos = dat$xpos * (path.list$dim.arena[1]/path.list$dim.pix[1])
 dat$ypos = dat$ypos * (path.list$dim.arena[2]/path.list$dim.pix[2])
-x_max = path.list$dim.pix[2] * (path.list$dim.arena[2]/path.list$dim.pix[2])
-y_max = path.list$dim.pix[1] * (path.list$dim.arena[1]/path.list$dim.pix[1])
+x_max = path.list$dim.pix[1] * (path.list$dim.arena[1]/path.list$dim.pix[1])
+y_max = path.list$dim.pix[2] * (path.list$dim.arena[2]/path.list$dim.pix[2])
 
 ggplot(aes(xpos, ypos), data = dat) +
   stat_density2d(aes(fill = ..density.., alpha = ..density..), geom = "tile", contour = FALSE) +
