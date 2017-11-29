@@ -1,7 +1,7 @@
 Package: pathtrackr
 Type: Package
 Title: Video Tracking and Analysis of Animal Movement
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: as.person(c(
     "Aaron Harmer <a.harmer@massey.ac.nz> [aut, cre]",
     "Daniel Thomas <d.b.thomas@massey.ac.nz> [aut]"

@@ -30,24 +30,19 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
   pboptions(type = "txt", char = ":")
   pbapp = create_progress_bar(name = "text", style = 3, char = ":", width = 50)
 
-  # Load all frames into an array
-  message("Loading video frames...")
-  flush.console()
-  cube = abind(pblapply(file.list, greyJPEG), along = 3)
-
   # Crop array to area of interest if needed
-  message("Click once on the top left corner of your arena, followed by clicking once on the bottom right corner of your arena, to define the opposing corners of the entire arena...")
+  message("Click once on the top left corner of your arena, followed by clicking once on the bottom right corner of your arena, to define the opposing corners of the entire arena...\n")
   flush.console()
   plot(raster(file.list[1], band = 2), col = gray.colors(256), asp = 1, legend = FALSE)
   bg.crop = base::as.vector(extent(select(raster(file.list[1], band = 2))))
-  cube = cube[(dim(cube)[1] - bg.crop[3]):(dim(cube)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:length(file.list)]
 
   # Get aniaml tracking box in first frame
-  bg.ref = reflect(cube[,,1])
+  bg.ref = greyJPEG(file.list[1])
+  bg.ref = bg.ref[(dim(bg.ref)[1] - bg.crop[3]):(dim(bg.ref)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
   bg.dim = dim(bg.ref)
-  message("Imagine a rectangle that defines the minimum region of your arena that contains your whole animal. Click once to define the top left corner of this rectangle, followed by clicking once to define the bottom right corner of this rectangle...")
+  message("Imagine the minimum sized rectangle that encompasses your whole animal. Click once to define the top left corner of this rectangle, followed by clicking once to define the bottom right corner of this rectangle...\n")
   flush.console()
-  plot(raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1, legend = FALSE)
+  plot(raster(reflect(bg.ref), xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1, legend = FALSE)
   animal.crop = round(base::as.vector(extent(select(raster(bg.ref, xmn = 0, xmx = bg.dim[1], ymn = 0, ymx = bg.dim[2])))))
 
   ref.x1 = animal.crop[1]
@@ -58,19 +53,22 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
   dim.y = abs(ref.y1 - ref.y2)
 
   # Generate background reference frame
-  message("Generating background reference frame...")
+  message("Generating background reference frame...\n")
   flush.console()
-  cube.med = cube.med = pbapply(cube, 1:2, median)
+  if (length(file.list) >= 1000) {
+    idx = sample(file.list, 1000)
+    bg.sample = abind(pblapply(idx, greyJPEG), along = 3)
+    bg.sample = bg.sample[(dim(bg.sample)[1] - bg.crop[3]):(dim(bg.sample)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2],]
+    bg.med = pbapply(bg.sample, 1:2, median)
+  } else {
+    bg.sample = abind(pblapply(file.list, greyJPEG), along = 3)
+    bg.sample = bg.sample[(dim(bg.sample)[1] - bg.crop[3]):(dim(bg.sample)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2],]
+    bg.med = pbapply(bg.sample, 1:2, median)
+  }
 
-  # Subtract background from all frames
-  message("Subtracting background from each frame...")
+  message("\nTracking animal...\n")
   flush.console()
-  cube.bgs = aaply(cube, 3, function(x) {abs(x - cube.med)}, .progress = pbapp)
-  cube.bgs = aperm(cube.bgs, c(2,3,1))
-  rm(cube)
 
-  message("Tracking animal...")
-  flush.console()
   # Loop through frames fitting tracking box and extracting animal position etc.
   xpos = c()
   ypos = c()
@@ -84,13 +82,16 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
 
   pbloop = txtProgressBar(min = 0, max = length(file.list), style = 3, char = ":", width = 50)
 
-  for (i in 1:dim(cube.bgs)[3]) {
+  for (i in 1:length(file.list)) {
 
     # For first frame...
     if (i == 1) {
 
       # Find, segment and label blobs, then fit an ellipse
-      tbox = reflect(cube.bgs[,,i][ref.y1:ref.y2,ref.x1:ref.x2])
+      frame = greyJPEG(file.list[i])
+      frame = frame[(dim(frame)[1] - bg.crop[3]):(dim(frame)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
+      frame = abs(frame - bg.med)
+      tbox = reflect(frame[ref.y1:ref.y2,ref.x1:ref.x2])
       tbox.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(tbox), blur)))))
       animal = ellPar(which(tbox.bin == 1, arr.ind = TRUE))
       animal.last = which(tbox.bin == 1)
@@ -120,7 +121,10 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
       if (y2 > bg.dim[1]) {y2 = bg.dim[1]}
 
       # Find, segment and label blobs, then fit an ellipse
-      tbox = reflect(cube.bgs[,,i][y2:y1,x1:x2])
+      frame = greyJPEG(file.list[i])
+      frame = frame[(dim(frame)[1] - bg.crop[3]):(dim(frame)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
+      frame = abs(frame - bg.med)
+      tbox = reflect(frame[y2:y1,x1:x2])
       tbox.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(tbox), blur)))))
 
       # Calculate proportion of overlapping pixels from between current & previous frame
@@ -153,7 +157,9 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
 
       } else {
 
-        frame.break = reflect(cube.bgs[,,i])
+        frame.break = greyJPEG(file.list[i])
+        frame.break = frame.break[(dim(frame.break)[1] - bg.crop[3]):(dim(frame.break)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
+        frame.break = abs(frame.break - bg.med)
         frame.break.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(frame.break), blur)))))
         blob.pixcount = as.matrix(count(frame.break.bin[frame.break.bin > 0]))
 

@@ -26,24 +26,19 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
   pboptions(type = "txt", char = ":")
   pbapp = create_progress_bar(name = "text", style = 3, char = ":", width = 50)
 
-  # Load all frames into an array
-  message("Loading video frames...")
-  flush.console()
-  cube = abind(pblapply(file.list, greyJPEG), along = 3)
-
   # Crop array to area of interest if needed
-  message("Click once on the top left corner of your arena, followed by clicking once on the bottom right corner of your arena, to define the opposing corners of the entire arena...")
+  message("Click once on the top left corner of your arena, followed by clicking once on the bottom right corner of your arena, to define the opposing corners of the entire arena...\n")
   flush.console()
-  plot(raster(file.list[1], band = 2), col = gray.colors(256), asp = 1)
+  plot(raster(file.list[1], band = 2), col = gray.colors(256), asp = 1, legend = FALSE)
   bg.crop = base::as.vector(extent(select(raster(file.list[1], band = 2))))
-  cube = cube[(dim(cube)[1] - bg.crop[3]):(dim(cube)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2], 1:length(file.list)]
 
   # Get aniaml tracking box in first frame
-  bg.ref = reflect(cube[,,1])
+  bg.ref = greyJPEG(file.list[1])
+  bg.ref = bg.ref[(dim(bg.ref)[1] - bg.crop[3]):(dim(bg.ref)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
   bg.dim = dim(bg.ref)
-  message("Imagine a rectangle that defines the minimum region of your arena that contains your whole animal. Click once to define the top left corner of this rectangle, followed by clicking once to define the bottom right corner of this rectangle...")
+  message("Imagine the minimum sized rectangle that encompasses your whole animal. Click once to define the top left corner of this rectangle, followed by clicking once to define the bottom right corner of this rectangle...\n")
   flush.console()
-  plot(raster(bg.ref, xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1)
+  plot(raster(reflect(bg.ref), xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), col = gray.colors(256), asp = 1, legend = FALSE)
   animal.crop = round(base::as.vector(extent(select(raster(bg.ref, xmn = 0, xmx = bg.dim[1], ymn = 0, ymx = bg.dim[2])))))
 
   ref.x1 = animal.crop[1]
@@ -54,18 +49,22 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
   dim.y = abs(ref.y1 - ref.y2)
 
   # Generate background reference frame
-  message("Generating background reference frame...")
+  message("Generating background reference frame...\n")
   flush.console()
-  cube.med = pbapply(cube, 1:2, median)
+  if (length(file.list) >= 1000) {
+    idx = sample(file.list, 1000)
+    bg.sample = abind(pblapply(idx, greyJPEG), along = 3)
+    bg.sample = bg.sample[(dim(bg.sample)[1] - bg.crop[3]):(dim(bg.sample)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2],]
+    bg.med = pbapply(bg.sample, 1:2, median)
+  } else {
+    bg.sample = abind(pblapply(file.list, greyJPEG), along = 3)
+    bg.sample = bg.sample[(dim(bg.sample)[1] - bg.crop[3]):(dim(bg.sample)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2],]
+    bg.med = pbapply(bg.sample, 1:2, median)
+  }
 
-  # Subtract background from all frames
-  message("Subtracting background from each frame...")
+  message("\nTracking animal...\n")
   flush.console()
-  cube.bgs = aaply(cube, 3, function(x) {abs(x - cube.med)}, .progress = pbapp)
-  cube.bgs = aperm(cube.bgs, c(2,3,1))
 
-  message("Tracking animal...")
-  flush.console()
   # Loop through frames fitting tracking box and extracting animal position etc.
   xpos = c()
   ypos = c()
@@ -83,13 +82,16 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
   diag_fig = paste(paste(unlist(strsplit(dirpath, "/"))[1:(length(unlist(strsplit(dirpath, "/"))) - 1)], collapse = "/"), "/", unlist(strsplit(dirpath, "/"))[length(unlist(strsplit(dirpath, "/")))], "_diagnostic.pdf", sep = "")
   pdf(file = diag_fig, width = 12, height = 8)
 
-  for (i in 1:dim(cube.bgs)[3]) {
+  for (i in 1:length(file.list)) {
 
     # For first frame...
     if (i == 1) {
 
-      # Find, segment and label blobs, then fit an ellipse
-      tbox = reflect(cube.bgs[,,i][ref.y1:ref.y2,ref.x1:ref.x2])
+        # Find, segment and label blobs, then fit an ellipse
+        frame = greyJPEG(file.list[i])
+        frame = frame[(dim(frame)[1] - bg.crop[3]):(dim(frame)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
+        frame = abs(frame - bg.med)
+        tbox = reflect(frame[ref.y1:ref.y2,ref.x1:ref.x2])
       tbox.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(tbox), blur)))))
       animal = ellPar(which(tbox.bin == 1, arr.ind = TRUE))
       animal.last = which(tbox.bin == 1)
@@ -103,16 +105,18 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
 
       par(mfrow = c(2, 3), mar = c(5, 5, 2, 3) + 0.1, cex.axis = 1.5, cex.lab = 1.5)
 
+      f = greyJPEG(file.list[i])
+      f = f[(dim(f)[1] - bg.crop[3]):(dim(f)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
       plot(1, 1, xlim = c(1, bg.dim[1]), ylim = c(1, bg.dim[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
-      rasterImage(as.raster(reflect(cube[,,i])), 1, 1, bg.dim[1], bg.dim[2])
+      rasterImage(as.raster(reflect(f)), 1, 1, bg.dim[1], bg.dim[2])
 
-      plot(raster(reflect(cube.bgs[,,i])), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
+      plot(raster(reflect(frame)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
       rect(ref.x1/bg.dim[2], ref.y1/bg.dim[1], ref.x2/bg.dim[2], ref.y2/bg.dim[1], border = "yellow", lwd = 1.5)
 
       plot(raster(reflect(tbox)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
       points(round(animal$centre[2])/dim(tbox)[2], round(animal$centre[1])/dim(tbox)[1], col = "red", pch = 16, cex = 2.5)
 
-      plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[2]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[2] * (xarena/bg.dim[2])), ylim = c(0, bg.dim[1] * (yarena/bg.dim[1])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
+      plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[1]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[1] * (xarena/bg.dim[1])), ylim = c(0, bg.dim[2] * (yarena/bg.dim[2])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
 
       plot(temp.movement[, 3], cumsum(temp.movement[, 1]), type = "l", lwd = 2, xlab = "Time (s)", ylab = "Distance (mm)", bty = "l", xlim = c(0, length(file.list) * (1/fps)), ylim = c(0, 0.1), col = "#08306B", cex = 1.5)
 
@@ -135,9 +139,12 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
       if (y2 < 0) {y2 = 0}
       if (y2 > bg.dim[1]) {y2 = bg.dim[1]}
 
-      # Find, segment and label blobs, then fit an ellipse
-      tbox = reflect(cube.bgs[,,i][y2:y1,x1:x2])
-      tbox.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(tbox), blur)))))
+	      # Find, segment and label blobs, then fit an ellipse
+	      frame = greyJPEG(file.list[i])
+	      frame = frame[(dim(frame)[1] - bg.crop[3]):(dim(frame)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
+	      frame = abs(frame - bg.med)
+	      tbox = reflect(frame[y2:y1,x1:x2])
+	      tbox.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(tbox), blur)))))
 
       # Calculate proportion of overlapping pixels from between current & previous frame
       animal.new = which(tbox.bin == 1)
@@ -169,9 +176,11 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
 
       } else {
 
-        frame.break = reflect(cube.bgs[,,i])
-        frame.break.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(frame.break), blur)))))
-        blob.pixcount = as.matrix(count(frame.break.bin[frame.break.bin > 0]))
+          frame.break = greyJPEG(file.list[i])
+          frame.break = frame.break[(dim(frame.break)[1] - bg.crop[3]):(dim(frame.break)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
+          frame.break = abs(frame.break - bg.med)
+          frame.break.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(frame.break), blur)))))
+          blob.pixcount = as.matrix(count(frame.break.bin[frame.break.bin > 0]))
 
         if (nrow(blob.pixcount) > 1) {
           frame.break.bin = rmObjects(frame.break.bin, blob.pixcount[blob.pixcount[,2] < mean(animal.size, na.rm = TRUE)*min.animal | blob.pixcount[,2] > mean(animal.size, na.rm = TRUE)*max.animal,1])
@@ -220,10 +229,12 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
 
       par(mfrow = c(2, 3), mar = c(5, 5, 2, 3) + 0.1, cex.axis = 1.5, cex.lab = 1.5)
 
+      f = greyJPEG(file.list[i])
+      f = f[(dim(f)[1] - bg.crop[3]):(dim(f)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
       plot(1, 1, xlim = c(1, bg.dim[1]), ylim = c(1, bg.dim[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
-      rasterImage(as.raster(reflect(cube[,,i])), 1, 1, bg.dim[1], bg.dim[2])
+      rasterImage(as.raster(reflect(f)), 1, 1, bg.dim[1], bg.dim[2])
 
-      plot(raster(reflect(cube.bgs[,,i])), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
+      plot(raster(reflect(frame)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
       rect(x1/bg.dim[2], y1/bg.dim[1], x2/bg.dim[2], y2/bg.dim[1], border = "yellow", lwd = 1.5)
 
       plot(raster(reflect(tbox)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
@@ -231,7 +242,7 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
 
       segments((xpos[i - 1] - x1)/ncol(tbox), (ypos[i - 1] - y1)/nrow(tbox), (xpos[i] - x1)/ncol(tbox), (ypos[i] - y1)/nrow(tbox), col = "red", pch = 16, lwd = 3)
 
-      plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[2]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[2] * (xarena/bg.dim[2])), ylim = c(0, bg.dim[1] * (yarena/bg.dim[1])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
+      plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[1]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[1] * (xarena/bg.dim[1])), ylim = c(0, bg.dim[2] * (yarena/bg.dim[2])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
 
       cumDistance = cumsum(ifelse(is.na(temp.movement[, 1]), 0, temp.movement[, 1])) + temp.movement[, 1] * 0
       plot(temp.movement[, 3], cumDistance, type = "l", lwd = 2, xlab = "Time (s)", ylab = "Distance (mm)", bty = "l", xlim = c(0, length(file.list) * (1/fps)), col = "#08306B", cex = 1.5)
@@ -275,8 +286,6 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
     warning("Tracking was not possible for ", length(breaks), " frames: you can proceed with this tracked path but you might consider using a higher frame rate or increasing the tracking 'box' size to improve the result.")
     flush.console()
   }
-
-  rm(cube)
 
   return(list(position = cbind(xpos, ypos), dim.pix = c(bg.dim[2], bg.dim[1]), dim.arena = c(xarena, yarena), fps = fps, movement = movement, total.distance = total.distance, mean.velocity = mean.velocity, total.duration = total.duration, breaks = breaks))
 
