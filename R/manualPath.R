@@ -41,7 +41,7 @@ manualPath = function(dirpath, xarena, yarena, fps = 30) {
     A = (xpos[j] - xpos[j - 1]) * (xarena/bg.dim[2])
     B = (ypos[j] - ypos[j - 1]) * (yarena/bg.dim[1])
     distance[count] = sqrt((A^2) + (B^2))
-    abs.angle[count] = ifelse(distance[count] != 0 | count == 1, (atan2(A, B * -1) * (180/pi)) %% 360, abs.angle[count - 1])
+    abs.angle[count] = ifelse(distance[count] != 0 | count == 1, (atan2(A, B) * (180/pi)) %% 360, abs.angle[count - 1])
     rel.angle[count] = ((((abs.angle[count] - abs.angle[count - 1]) %% 360) + 540) %% 360) - 180
     velocity[count] = distance[count]/(1/fps)
     count = count + 1
