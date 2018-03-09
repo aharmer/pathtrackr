@@ -159,7 +159,7 @@ trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0
 
         frame.break = greyJPEG(file.list[i])
         frame.break = frame.break[(dim(frame.break)[1] - bg.crop[3]):(dim(frame.break)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
-        frame.break = abs(frame.break - bg.med)
+        frame.break = reflect(abs(frame.break - bg.med))
         frame.break.bin = as.matrix(bwlabel(opening(thresh(isoblur(as.cimg(frame.break), blur)))))
         blob.pixcount = as.matrix(count(frame.break.bin[frame.break.bin > 0]))
 
