@@ -107,16 +107,16 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
 
       f = greyJPEG(file.list[i])
       f = f[(dim(f)[1] - bg.crop[3]):(dim(f)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
-      plot(1, 1, xlim = c(1, bg.dim[1]), ylim = c(1, bg.dim[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
-      rasterImage(as.raster(reflect(f)), 1, 1, bg.dim[1], bg.dim[2])
+      plot(1, 1, xlim = c(1, bg.dim[2]), ylim = c(1, bg.dim[1]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "o", asp = 1)
+      rasterImage(as.raster(reflect(f)), 1, 1, bg.dim[2], bg.dim[1])
 
-      plot(raster(reflect(frame)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
-      rect(ref.x1/bg.dim[2], ref.y1/bg.dim[1], ref.x2/bg.dim[2], ref.y2/bg.dim[1], border = "yellow", lwd = 1.5)
+      plot(raster(reflect(frame), xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), legend = FALSE, xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", cex = 1.5, col = viridis(256), asp = 1)
+      rect(ref.x1, ref.y1, ref.x2, ref.y2, border = "yellow", lwd = 1.5)
 
-      plot(raster(reflect(tbox)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
-      points(round(animal$centre[2])/dim(tbox)[2], round(animal$centre[1])/dim(tbox)[1], col = "red", pch = 16, cex = 2.5)
+      plot(raster(reflect(tbox), xmn = 0, xmx = dim(tbox)[2], ymn = 0, ymx = dim(tbox)[1]), legend = FALSE, xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", cex = 1.5, col = viridis(256))
+      points(round(animal$centre[2]), round(animal$centre[1]), col = "red", pch = 16, cex = 2.5)
 
-      plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[1]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[1] * (xarena/bg.dim[1])), ylim = c(0, bg.dim[2] * (yarena/bg.dim[2])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
+      plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[1]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[1] * (xarena/bg.dim[1])), ylim = c(0, bg.dim[2] * (yarena/bg.dim[2])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5, asp = 1)
 
       plot(temp.movement[, 3], cumsum(temp.movement[, 1]), type = "l", lwd = 2, xlab = "Time (s)", ylab = "Distance (mm)", bty = "l", xlim = c(0, length(file.list) * (1/fps)), ylim = c(0, 0.1), col = "#08306B", cex = 1.5)
 
@@ -231,18 +231,18 @@ diagnosticPDF = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp
 
       f = greyJPEG(file.list[i])
       f = f[(dim(f)[1] - bg.crop[3]):(dim(f)[1] - bg.crop[4]), bg.crop[1]:bg.crop[2]]
-      plot(1, 1, xlim = c(1, bg.dim[1]), ylim = c(1, bg.dim[2]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "n")
-      rasterImage(as.raster(reflect(f)), 1, 1, bg.dim[1], bg.dim[2])
+      plot(1, 1, xlim = c(1, bg.dim[2]), ylim = c(1, bg.dim[1]), type = "n", xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", xlab = "", ylab = "", bty = "o", asp = 1)
+      rasterImage(as.raster(reflect(f)), 1, 1, bg.dim[2], bg.dim[1])
 
-      plot(raster(reflect(frame)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
-      rect(x1/bg.dim[2], y1/bg.dim[1], x2/bg.dim[2], y2/bg.dim[1], border = "yellow", lwd = 1.5)
+      plot(raster(reflect(frame), xmn = 0, xmx = bg.dim[2], ymn = 0, ymx = bg.dim[1]), legend = FALSE, xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", cex = 1.5, col = viridis(256), asp = 1)
+      rect(x1, y1, x2, y2, border = "yellow", lwd = 1.5)
 
-      plot(raster(reflect(tbox)), legend = FALSE, xaxs = "i", yaxs = "i", cex = 1.5, col = viridis(256))
-      points(round(animal$centre[2])/dim(tbox)[2], round(animal$centre[1])/dim(tbox)[1], col = "red", pch = 16, cex = 2.5)
+      plot(raster(reflect(tbox), xmn = 0, xmx = dim(tbox)[2], ymn = 0, ymx = dim(tbox)[1]), legend = FALSE, xaxs = "i", yaxs = "i", xaxt = "n", yaxt = "n", cex = 1.5, col = viridis(256))
+      points(round(animal$centre[2]), round(animal$centre[1]), col = "red", pch = 16, cex = 2.5)
 
-      segments((xpos[i - 1] - x1)/ncol(tbox), (ypos[i - 1] - y1)/nrow(tbox), (xpos[i] - x1)/ncol(tbox), (ypos[i] - y1)/nrow(tbox), col = "red", pch = 16, lwd = 3)
+      segments((xpos[i - 1] - x1), (ypos[i - 1] - y1), (xpos[i] - x1), (ypos[i] - y1), col = "red", pch = 16, lwd = 3)
 
-      plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[1]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[1] * (xarena/bg.dim[1])), ylim = c(0, bg.dim[2] * (yarena/bg.dim[2])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5)
+      plot(xpos * (xarena/bg.dim[2]), ypos * (yarena/bg.dim[1]), col = "#08306B", type = "l", lwd = 2, pch = 16, xlim = c(0, bg.dim[1] * (xarena/bg.dim[1])), ylim = c(0, bg.dim[2] * (yarena/bg.dim[2])), xlab = "Distance (mm)", ylab = "Distance (mm)", xaxs = "i", yaxs = "i", cex = 1.5, asp = 1)
 
       cumDistance = cumsum(ifelse(is.na(temp.movement[, 1]), 0, temp.movement[, 1])) + temp.movement[, 1] * 0
       plot(temp.movement[, 3], cumDistance, type = "l", lwd = 2, xlab = "Time (s)", ylab = "Distance (mm)", bty = "l", xlim = c(0, length(file.list) * (1/fps)), col = "#08306B", cex = 1.5)
