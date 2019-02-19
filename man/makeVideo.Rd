@@ -4,7 +4,8 @@
 \alias{makeVideo}
 \title{Make a video of an animal's tracked path}
 \usage{
-makeVideo(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9)
+makeVideo(dirpath, xarena, yarena, fps = 30, box = 1,
+  jitter.damp = 0.9)
 }
 \arguments{
 \item{dirpath}{a character string specifying a directory containing only jpeg files extracted from a video}

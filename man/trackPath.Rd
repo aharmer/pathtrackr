@@ -4,7 +4,8 @@
 \alias{trackPath}
 \title{Track an animal's movement across a series of still frames}
 \usage{
-trackPath(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9)
+trackPath(dirpath, xarena, yarena, fps = 30, box = 1,
+  jitter.damp = 0.9)
 }
 \arguments{
 \item{dirpath}{a character string specifying a directory containing only jpeg files extracted from a video}
