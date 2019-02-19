@@ -18,7 +18,7 @@
 #' @export
 trackPath = function(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9) {
 
-  require(raster, quietly = TRUE)
+  require(raster, quietly = TRUE, warn.conflicts = FALSE)
 
   if (length(dir(dirpath, "*.jpg")) > 0) {
     file.list = list.files(dirpath, full.names = TRUE)
