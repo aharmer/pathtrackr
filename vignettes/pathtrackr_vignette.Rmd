@@ -3,7 +3,8 @@ title: "Getting started with *pathtrackr*"
 author: "Aaron Harmer"
 date: "`r Sys.Date()`"
 output: 
-  html_document:
+  html_vignette: 
+    default:
     toc: true
     number_sections: false
 vignette: >
@@ -212,8 +213,8 @@ Dr Aaron Harmer
 School of Natural and Computational Sciences  
 Massey University  
 Auckland, New Zealand  
-a.harmer@massey.ac.nz  
-harmerlab.com  
+[Email](mailto:a.harmer@massey.ac.nz)  
+[harmerlab.com](https://www.harmerlab.com/home)  
   
 <br />  
 <br />  
