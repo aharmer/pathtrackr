@@ -117,9 +117,6 @@ You can also produce a video output of the animal's movement, along with summary
 makeVideo(dirpath, xarena, yarena, fps = 30, box = 1, jitter.damp = 0.9)
 ```
 
-<img src="https://user-images.githubusercontent.com/10540385/53382775-2bae2e80-39da-11e9-86ea-ff8036a8bc77.gif" width="600" style="display: block; margin: auto;" />
-
-
    
 
 #### Troubleshooting
