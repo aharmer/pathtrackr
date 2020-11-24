@@ -1,4 +1,8 @@
 
+ATTN:
+--------
+Dear *pathtrackr* users, due to the exceptional circumstances of 2020, I have been unable to maintain the package over the last several months. My sincerest apologies. I will be aiming to push new updates and address all logged issues by early 2021. Thank you for your patience.
+
 Overview
 --------
 
