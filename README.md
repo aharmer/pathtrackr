@@ -1,7 +1,7 @@
 
 ATTN:
 --------
-Dear *pathtrackr* users, due to the exceptional circumstances of teh past couple of years I have been unable to maintain updates to the package. My sincerest apologies for any inconvenience, but as I no longer work in a research role, I will priortise this when I am able. Thank you for your patience.
+Dear *pathtrackr* users, due to the exceptional circumstances of the past couple of years I have been unable to maintain updates to the package. My sincerest apologies for any inconvenience, but as I no longer work in a research role, I will priortise this when I am able. Thank you for your patience.
 
 
 Overview
