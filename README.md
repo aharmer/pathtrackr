@@ -1,6 +1,10 @@
 
 ATTN:
 --------
+The retirement of the *rgdal* package that *pathtrackr* depends heavily on has further delayed the upgrade and issue fixes for this package. I apologise and appreciate your patience while I adapt *pathtrackr* to work with the newer *sf* and *terra* packages that replace *rgdal*.
+
+ATTN:
+--------
 Dear *pathtrackr* users, due to the exceptional circumstances of the past couple of years I have been unable to maintain updates to the package. My sincerest apologies for any inconvenience, but as I no longer work in a research role, I will priortise this when I am able. Thank you for your patience.
 
 

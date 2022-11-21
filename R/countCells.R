@@ -5,7 +5,6 @@
 #' @param xgrid an integer specifying the number of grid cells the arena should be divided into along its width
 #' @param ygrid an integer specifying the number of grid cells the arena should be divided into along its height
 #' @return If assigned to an object, a list containing the number of cells crossed and the proportion of total cells crossed; if not assigned to an object, a message in the console is returned.
-#' @importFrom marmap diag.bathy
 #' @export
 countCells = function(path.list, xgrid, ygrid) {
 
