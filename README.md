@@ -26,8 +26,6 @@ Updates
 -------
 
 Version 1.2.3 of *pathtrackr* includes some updates to the *manualPath* function to allow it to deal with occlusions.
-[![DOI](https://zenodo.org/badge/60446796.svg)](https://zenodo.org/badge/latestdoi/60446796)
-
 
 Version 1.2.2 of *pathtrackr* includes some general speed improvements and fixes some minor plotting bugs.
 
