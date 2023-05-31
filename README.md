@@ -1,12 +1,13 @@
 
-ATTN:
---------
-The retirement of the *rgdal* and *raster* packages that *pathtrackr* depends heavily on has further delayed the upgrade and issue fixes for this package. I apologise and appreciate your patience while I adapt *pathtrackr* to work with the newer *sf* and *terra* packages that replace *rgdal*.
+---
+**Note**
+<br/>
+With recent advances in video tracking software, we have come to the decision to retire *pathtrackr*. Therefore, this repositry will no longer be maintained. Thanks to all our users over the past few years, and we hope *pathtrackr* has been of some use to you. If you are looking for animal tracking tools we recommend the newly released [*AnimalTA*](http://vchiara.eu/index.php/animalta), or for complex multiple animal tracking [*idTracker*](https://www.idtracker.es/). Best of luck in your research.
+<br/>
 
-ATTN:
---------
-Dear *pathtrackr* users, due to the exceptional circumstances of the past couple of years I have been unable to maintain updates to the package. My sincerest apologies for any inconvenience, but as I no longer work in a research role, I will priortise this when I am able. Thank you for your patience.
+---
 
+<br/>
 
 Overview
 --------
